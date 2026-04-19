@@ -98,8 +98,14 @@ const CandidateForm = () => {
     const file = e.target.files?.[0];
     if (file) {
       setFileName(file.name);
-      // In a real app we'd upload to a server or store base64. We'll just save the name mockup.
-      setFormData(prev => ({ ...prev, cvFileName: file.name }));
+      // Simulate file text extraction (OCR / pdf parser) for mock
+      const mockExtraction = `Documento: ${file.name}\nConteúdo extraído simulado para fins de busca do sistema...`;
+      
+      setFormData(prev => ({ 
+        ...prev, 
+        cvFileName: file.name,
+        cvText: prev.cvText ? prev.cvText : mockExtraction
+      }));
       
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -184,6 +190,18 @@ const CandidateForm = () => {
                 <option value="Híbrido">Híbrido</option>
                 <option value="Remoto">Remoto</option>
               </select>
+            </div>
+          </div>
+
+          <div className="grid-2">
+            <div className="form-group">
+              <label className="form-label">Anos de Experiência em TI</label>
+              <input type="number" className="form-control" name="experienceIT" value={formData.experienceIT || ''} onChange={handleChange} min="0" step="0.5" placeholder="Ex: 5" />
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Anos de Experiência na Vaga</label>
+              <input type="number" className="form-control" name="experienceRole" value={formData.experienceRole || ''} onChange={handleChange} min="0" step="0.5" placeholder="Ex: 3" />
             </div>
           </div>
 
@@ -287,6 +305,19 @@ const CandidateForm = () => {
                 <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>Arquivo selecionado: {fileName}</span>
               </div>
             )}
+            
+            <div className="form-group" style={{ marginTop: '2rem', textAlign: 'left' }}>
+              <label className="form-label">Texto do Currículo (para Busca por Palavras-Chave)</label>
+              <textarea 
+                className="form-control" 
+                name="cvText" 
+                value={formData.cvText || ''} 
+                onChange={handleChange} 
+                rows={4} 
+                placeholder="Insira palavras chaves ou texto extraído do CV..." 
+              />
+              <small style={{ color: 'var(--text-muted)' }}>Ao subir um arquivo o sistema fará a extração desse texto automaticamente.</small>
+            </div>
           </div>
         </div>
 

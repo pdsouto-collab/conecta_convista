@@ -11,6 +11,16 @@ const CandidateList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [moduleFilter, setModuleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState(location.state?.statusFilter || '');
+  
+  // Advanced filters
+  const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
+  const [availabilityFilter, setAvailabilityFilter] = useState('');
+  const [cvKeywordFilter, setCvKeywordFilter] = useState('');
+  const [minExperienceITFilter, setMinExperienceITFilter] = useState('');
+  const [minExperienceRoleFilter, setMinExperienceRoleFilter] = useState('');
+  const [maxSalaryFilterPJ, setMaxSalaryFilterPJ] = useState('');
+  const [maxSalaryFilterCLT, setMaxSalaryFilterCLT] = useState('');
+
   const [technologies, setTechnologies] = useState<Technology[]>([]);
 
   useEffect(() => {
@@ -36,8 +46,49 @@ const CandidateList = () => {
                         c.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchModule = moduleFilter ? c.technologies.some(m => m.toLowerCase().includes(moduleFilter.toLowerCase())) : true;
     const matchStatus = statusFilter ? c.status === statusFilter : true;
-    return matchSearch && matchModule && matchStatus;
+    
+    const matchAvailability = availabilityFilter ? c.availability === availabilityFilter : true;
+    
+    // Keyword search in CV
+    const matchCvKeyword = cvKeywordFilter ? (
+      (c.cvText && c.cvText.toLowerCase().includes(cvKeywordFilter.toLowerCase())) ||
+      (c.cvFileName && c.cvFileName.toLowerCase().includes(cvKeywordFilter.toLowerCase())) ||
+      (c.generalNotes && c.generalNotes.toLowerCase().includes(cvKeywordFilter.toLowerCase()))
+    ) : true;
+    
+    // Experience
+    const matchExpIT = minExperienceITFilter ? parseFloat(c.experienceIT || '0') >= parseFloat(minExperienceITFilter) : true;
+    const matchExpRole = minExperienceRoleFilter ? parseFloat(c.experienceRole || '0') >= parseFloat(minExperienceRoleFilter) : true;
+    
+    // Salary
+    const parseSalary = (val?: string) => {
+      if (!val) return 0;
+      return parseFloat(val.replace(/\D/g, '')) / 100;
+    };
+    
+    const matchSalaryPJ = maxSalaryFilterPJ ? (
+      c.salaryExpectationPJ ? parseSalary(c.salaryExpectationPJ) <= parseFloat(maxSalaryFilterPJ) : false
+    ) : true;
+    
+    const matchSalaryCLT = maxSalaryFilterCLT ? (
+      c.salaryExpectationCLT ? parseSalary(c.salaryExpectationCLT) <= parseFloat(maxSalaryFilterCLT) : false
+    ) : true;
+
+    return matchSearch && matchModule && matchStatus && matchAvailability && matchCvKeyword && matchExpIT && matchExpRole && matchSalaryPJ && matchSalaryCLT;
   });
+
+  const hasActiveFilters = moduleFilter || statusFilter || availabilityFilter || cvKeywordFilter || minExperienceITFilter || minExperienceRoleFilter || maxSalaryFilterPJ || maxSalaryFilterCLT;
+
+  const clearFilters = () => {
+    setModuleFilter('');
+    setStatusFilter('');
+    setAvailabilityFilter('');
+    setCvKeywordFilter('');
+    setMinExperienceITFilter('');
+    setMinExperienceRoleFilter('');
+    setMaxSalaryFilterPJ('');
+    setMaxSalaryFilterCLT('');
+  };
 
   return (
     <div>
@@ -53,7 +104,7 @@ const CandidateList = () => {
       </div>
 
       <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
           <div style={{ flex: '1 1 300px', position: 'relative' }}>
             <Search size={18} style={{ position: 'absolute', top: '0.75rem', left: '0.875rem', color: 'var(--text-light)' }} />
             <input 
@@ -65,47 +116,98 @@ const CandidateList = () => {
               style={{ paddingLeft: '2.5rem' }}
             />
           </div>
-          <div style={{ flex: '1 1 200px', position: 'relative' }}>
-            <Filter size={18} style={{ position: 'absolute', top: '0.75rem', left: '0.875rem', color: 'var(--text-light)' }} />
-            <select 
-              className="form-control" 
-              value={moduleFilter}
-              onChange={(e) => setModuleFilter(e.target.value)}
-              style={{ paddingLeft: '2.5rem', appearance: 'none' }}
-            >
-              <option value="">Todas as Tecnologias e Metodologias</option>
-              {technologies.map(t => (
-                <option key={t.id} value={t.name}>{t.name}</option>
-              ))}
-            </select>
-          </div>
-          <div style={{ flex: '1 1 200px', position: 'relative' }}>
-            <Filter size={18} style={{ position: 'absolute', top: '0.75rem', left: '0.875rem', color: 'var(--text-light)' }} />
-            <select 
-              className="form-control" 
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              style={{ paddingLeft: '2.5rem', appearance: 'none' }}
-            >
-              <option value="">Todos os Status</option>
-              <option value="Novo">Novo</option>
-              <option value="Em Andamento">Em Andamento</option>
-              <option value="Aprovado">Aprovado</option>
-              <option value="Reprovado">Reprovado</option>
-              <option value="Vaga Congelada">Vaga Congelada</option>
-            </select>
-          </div>
-          {(searchTerm || moduleFilter || statusFilter) && (
+          
+          <button 
+            className="btn btn-outline"
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderColor: advancedFiltersOpen ? 'var(--primary)' : 'var(--border)' }}
+            onClick={() => setAdvancedFiltersOpen(!advancedFiltersOpen)}
+          >
+            <Filter size={18} /> Filtros Avançados
+          </button>
+
+          {hasActiveFilters && (
             <button 
               className="btn btn-outline"
               style={{ color: 'var(--danger)', borderColor: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-              onClick={() => navigate('/dashboard')}
-              title="Limpar filtros e voltar para o Dashboard"
+              onClick={clearFilters}
+              title="Limpar todos os filtros"
             >
-              <X size={18} /> Fechar Filtros
+              <X size={18} /> Limpar
             </button>
           )}
         </div>
+
+        {advancedFiltersOpen && (
+          <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }} className="animate-fade-in">
+            <h4 style={{ marginBottom: '1rem', color: 'var(--text-main)' }}>Opções de Filtragem</h4>
+            <div className="grid-2" style={{ gap: '1rem' }}>
+              
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label" style={{ fontSize: '0.75rem' }}>Palavra-chave no Currículo / Observações</label>
+                <div style={{ position: 'relative' }}>
+                  <FileText size={16} style={{ position: 'absolute', top: '0.7rem', left: '0.75rem', color: 'var(--text-light)' }} />
+                  <input 
+                    type="text" className="form-control" 
+                    placeholder="Ex: ERP, Integração..." 
+                    value={cvKeywordFilter} onChange={(e) => setCvKeywordFilter(e.target.value)} 
+                    style={{ paddingLeft: '2.2rem' }}
+                  />
+                </div>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label" style={{ fontSize: '0.75rem' }}>Tecnologia / Módulo Principal</label>
+                <select className="form-control" value={moduleFilter} onChange={(e) => setModuleFilter(e.target.value)}>
+                  <option value="">Todas as Opções</option>
+                  {technologies.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
+                </select>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label" style={{ fontSize: '0.75rem' }}>Status do Processo</label>
+                <select className="form-control" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                  <option value="">Todos os Status</option>
+                  <option value="Novo">Novo</option>
+                  <option value="Em Andamento">Em Andamento</option>
+                  <option value="Aprovado">Aprovado</option>
+                  <option value="Reprovado">Reprovado</option>
+                  <option value="Vaga Congelada">Vaga Congelada</option>
+                </select>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label" style={{ fontSize: '0.75rem' }}>Disponibilidade</label>
+                <select className="form-control" value={availabilityFilter} onChange={(e) => setAvailabilityFilter(e.target.value)}>
+                  <option value="">Qualquer Disponibilidade</option>
+                  <option value="Presencial">Presencial</option>
+                  <option value="Híbrido">Híbrido</option>
+                  <option value="Remoto">Remoto</option>
+                </select>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label" style={{ fontSize: '0.75rem' }}>Experiência Mínima em TI (Anos)</label>
+                <input type="number" className="form-control" min="0" step="0.5" placeholder="Ex: 5" value={minExperienceITFilter} onChange={(e) => setMinExperienceITFilter(e.target.value)} />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label" style={{ fontSize: '0.75rem' }}>Experiência Mínima na Vaga (Anos)</label>
+                <input type="number" className="form-control" min="0" step="0.5" placeholder="Ex: 3" value={minExperienceRoleFilter} onChange={(e) => setMinExperienceRoleFilter(e.target.value)} />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label" style={{ fontSize: '0.75rem' }}>Pretensão PJ Máxima (R$)</label>
+                <input type="number" className="form-control" min="0" step="100" placeholder="Max: 15000" value={maxSalaryFilterPJ} onChange={(e) => setMaxSalaryFilterPJ(e.target.value)} />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label" style={{ fontSize: '0.75rem' }}>Pretensão CLT Máxima (R$)</label>
+                <input type="number" className="form-control" min="0" step="100" placeholder="Max: 10000" value={maxSalaryFilterCLT} onChange={(e) => setMaxSalaryFilterCLT(e.target.value)} />
+              </div>
+
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="card">

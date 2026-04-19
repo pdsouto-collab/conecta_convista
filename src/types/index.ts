@@ -36,6 +36,11 @@ export type Candidate = {
   interviewer2?: string;
   interviewer3?: string;
 
+  // Professional
+  experienceIT?: string;
+  experienceRole?: string;
+  cvText?: string; // Text extracted from CV for searching
+
   // Evaluation
   behavioralEvaluation: EvaluationMatrix[];
   technicalEvaluation: EvaluationMatrix[];

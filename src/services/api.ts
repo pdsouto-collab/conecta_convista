@@ -38,6 +38,12 @@ export const api = {
   },
   
   seedMockData: () => {
+    const existingTechs = api.getTechnologies();
+    if (existingTechs.length === 0) {
+      const defaultTechs = ['FI', 'CO', 'MM', 'SD', 'ABAP', 'Basis', 'PI/PO', 'BW/BI', 'BPC'];
+      defaultTechs.forEach(t => api.saveTechnology({ id: t.toLowerCase(), name: t }));
+    }
+
     const existing = api.getCandidates();
     if (existing.length > 0) return;
     
@@ -64,12 +70,6 @@ export const api = {
     };
     
     api.saveCandidate(mock);
-
-    const existingTechs = api.getTechnologies();
-    if (existingTechs.length === 0) {
-      const defaultTechs = ['FI', 'CO', 'MM', 'SD', 'ABAP'];
-      defaultTechs.forEach(t => api.saveTechnology({ id: t.toLowerCase(), name: t }));
-    }
   },
 
   // --- TECHNOLOGIES ---

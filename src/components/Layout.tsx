@@ -1,13 +1,16 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Settings, LogOut } from 'lucide-react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, Users as UsersIcon, Settings, LogOut, ShieldCheck } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 import './Layout.css';
 
 const Layout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   const navItems = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/candidates', icon: Users, label: 'Candidatos' },
+    { path: '/candidates', icon: UsersIcon, label: 'Candidatos' },
   ];
 
   return (
@@ -39,7 +42,13 @@ const Layout = () => {
             <Settings size={20} />
             <span>Configurações</span>
           </NavLink>
-          <button className="nav-item logout">
+          {user?.role === 'admin' && (
+            <NavLink to="/users" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <ShieldCheck size={20} />
+              <span>Usuários</span>
+            </NavLink>
+          )}
+          <button className="nav-item logout" onClick={() => { logout(); navigate('/login'); }}>
             <LogOut size={20} />
             <span>Sair</span>
           </button>
@@ -57,9 +66,12 @@ const Layout = () => {
             </span>
           </div>
           <div className="header-actions">
-            <div className="avatar">RS</div>
+            <div className="avatar">
+              {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+            </div>
             <div className="user-info">
-              <span className="user-name">Recrutamento & Seleção</span>
+              <span className="user-name">{user?.firstName} {user?.lastName}</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{user?.position}</span>
             </div>
           </div>
         </header>

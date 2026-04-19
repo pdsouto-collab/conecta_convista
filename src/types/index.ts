@@ -56,3 +56,16 @@ export type LibraryCriteria = {
   type: LibraryCriteriaType;
   technologyId?: string; // only for Técnico, optional
 };
+
+export type UserRole = 'admin' | 'hr' | 'interviewer';
+
+export type User = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  position: string;
+  role: UserRole;
+  password?: string;
+  active: boolean;
+};

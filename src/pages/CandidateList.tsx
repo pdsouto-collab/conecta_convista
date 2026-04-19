@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../services/api';
 import type { Candidate, Technology } from '../types';
-import { Search, Filter, Plus, FileText, ExternalLink, Edit, Trash2, X } from 'lucide-react';
+import { Search, Filter, Plus, FileText, Edit, Trash2, X, ClipboardList } from 'lucide-react';
 
 const CandidateList = () => {
   const navigate = useNavigate();
@@ -150,17 +150,17 @@ const CandidateList = () => {
                         className="btn btn-outline" 
                         style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
                         onClick={() => navigate(`/candidates/${candidate.id}`)}
-                        title="Ver Perfil"
+                        title="Avaliação da Entrevista"
                       >
-                        <ExternalLink size={14} /> View
+                        <ClipboardList size={14} /> Informações de Entrevista
                       </button>
                       <button 
                         className="btn btn-outline" 
-                        style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem' }}
+                        style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
                         onClick={() => navigate(`/candidates/${candidate.id}/edit`)}
-                        title="Editar"
+                        title="Editar Informações"
                       >
-                        <Edit size={14} />
+                        <Edit size={14} /> Informações Gerais
                       </button>
                       <button 
                         className="btn btn-outline" 

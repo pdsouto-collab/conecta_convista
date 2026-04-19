@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, UserPlus, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, Settings, LogOut } from 'lucide-react';
 import './Layout.css';
 
 const Layout = () => {
@@ -8,7 +8,6 @@ const Layout = () => {
   const navItems = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/candidates', icon: Users, label: 'Candidatos' },
-    { path: '/candidates/new', icon: UserPlus, label: 'Novo Cadastro' },
   ];
 
   return (

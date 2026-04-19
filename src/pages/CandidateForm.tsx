@@ -21,6 +21,13 @@ const CandidateForm = () => {
     seniority: 'Pleno',
     status: 'Novo',
     generalNotes: '',
+    salaryExpectationPJ: '',
+    salaryExpectationCLT: '',
+    availableFrom: '',
+    interviewDate: '',
+    interviewer1: '',
+    interviewer2: '',
+    interviewer3: '',
     behavioralEvaluation: [
       { id: uuidv4(), criteria: 'Comunicação', score: 0, observation: '' },
       { id: uuidv4(), criteria: 'Trabalho em Equipe', score: 0, observation: '' },
@@ -184,6 +191,47 @@ const CandidateForm = () => {
                   {tech.name}
                 </button>
               ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="card" style={{ padding: '2rem', marginBottom: '1.5rem' }}>
+          <h3 style={{ marginBottom: '1.5rem', color: 'var(--primary)' }}>Informações de Contratação e Entrevista</h3>
+          
+          <div className="grid-2">
+            <div className="form-group">
+              <label className="form-label">Pretensão Salarial PJ (BRL)</label>
+              <input type="text" className="form-control" name="salaryExpectationPJ" value={formData.salaryExpectationPJ || ''} onChange={handleChange} placeholder="R$ 0,00" />
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Pretensão Salarial CLT (BRL)</label>
+              <input type="text" className="form-control" name="salaryExpectationCLT" value={formData.salaryExpectationCLT || ''} onChange={handleChange} placeholder="R$ 0,00" />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Disponibilidade a partir de</label>
+              <input type="date" className="form-control" name="availableFrom" value={formData.availableFrom || ''} onChange={handleChange} />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Data da Entrevista</label>
+              <input type="date" className="form-control" name="interviewDate" value={formData.interviewDate || ''} onChange={handleChange} />
+            </div>
+          </div>
+
+          <div className="grid-2" style={{ marginTop: '1rem' }}>
+            <div className="form-group">
+              <label className="form-label">Entrevistador 1</label>
+              <input type="text" className="form-control" name="interviewer1" value={formData.interviewer1 || ''} onChange={handleChange} placeholder="Nome do Entrevistador" />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Entrevistador 2</label>
+              <input type="text" className="form-control" name="interviewer2" value={formData.interviewer2 || ''} onChange={handleChange} placeholder="Nome do Entrevistador" />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Entrevistador 3</label>
+              <input type="text" className="form-control" name="interviewer3" value={formData.interviewer3 || ''} onChange={handleChange} placeholder="Nome do Entrevistador" />
             </div>
           </div>
         </div>

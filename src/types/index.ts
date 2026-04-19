@@ -27,6 +27,15 @@ export type Candidate = {
   cvFileName?: string;
   createdAt: string;
 
+  // Additional Information
+  salaryExpectationPJ?: string;
+  salaryExpectationCLT?: string;
+  availableFrom?: string;
+  interviewDate?: string;
+  interviewer1?: string;
+  interviewer2?: string;
+  interviewer3?: string;
+
   // Evaluation
   behavioralEvaluation: EvaluationMatrix[];
   technicalEvaluation: EvaluationMatrix[];

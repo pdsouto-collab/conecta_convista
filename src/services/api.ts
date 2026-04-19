@@ -64,6 +64,12 @@ export const api = {
     };
     
     api.saveCandidate(mock);
+
+    const existingTechs = api.getTechnologies();
+    if (existingTechs.length === 0) {
+      const defaultTechs = ['FI', 'CO', 'MM', 'SD', 'ABAP'];
+      defaultTechs.forEach(t => api.saveTechnology({ id: t.toLowerCase(), name: t }));
+    }
   },
 
   // --- TECHNOLOGIES ---

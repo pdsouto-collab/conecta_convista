@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import type { Candidate, Technology } from '../types';
-import { Search, Filter, Plus, FileText, ExternalLink } from 'lucide-react';
+import { Search, Filter, Plus, FileText, ExternalLink, Edit, Trash2 } from 'lucide-react';
 
 const CandidateList = () => {
   const navigate = useNavigate();
@@ -15,6 +15,13 @@ const CandidateList = () => {
     setCandidates(api.getCandidates());
     setTechnologies(api.getTechnologies());
   }, []);
+
+  const handleDelete = (id: string, name: string) => {
+    if (window.confirm(`Tem certeza que deseja excluir o candidato ${name}?`)) {
+      api.deleteCandidate(id);
+      setCandidates(api.getCandidates());
+    }
+  };
 
   const filteredCandidates = candidates.filter((c) => {
     const matchSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -103,13 +110,32 @@ const CandidateList = () => {
                     <span style={{ fontWeight: 500, fontSize: '0.875rem' }}>{candidate.status}</span>
                   </td>
                   <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
-                    <button 
-                      className="btn btn-outline" 
-                      style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
-                      onClick={() => navigate(`/candidates/${candidate.id}`)}
-                    >
-                      <ExternalLink size={14} /> View
-                    </button>
+                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                      <button 
+                        className="btn btn-outline" 
+                        style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
+                        onClick={() => navigate(`/candidates/${candidate.id}`)}
+                        title="Ver Perfil"
+                      >
+                        <ExternalLink size={14} /> View
+                      </button>
+                      <button 
+                        className="btn btn-outline" 
+                        style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem' }}
+                        onClick={() => navigate(`/candidates/${candidate.id}/edit`)}
+                        title="Editar"
+                      >
+                        <Edit size={14} />
+                      </button>
+                      <button 
+                        className="btn btn-outline" 
+                        style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', color: 'var(--danger)', borderColor: 'transparent' }}
+                        onClick={() => handleDelete(candidate.id, candidate.name)}
+                        title="Excluir"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

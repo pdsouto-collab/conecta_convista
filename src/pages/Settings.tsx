@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { api } from '../services/api';
-import type { Technology, LibraryCriteria } from '../types';
+import type { Technology, LibraryCriteria, Seniority } from '../types';
 import { Settings as SettingsIcon, Trash2, Plus, Edit, Save, X } from 'lucide-react';
 
 const Settings = () => {
-  const [activeTab, setActiveTab] = useState<'behavioral' | 'technical' | 'techs'>('behavioral');
+  const [activeTab, setActiveTab] = useState<'behavioral' | 'technical' | 'techs' | 'seniorities'>('behavioral');
   
   const [technologies, setTechnologies] = useState<Technology[]>([]);
+  const [seniorities, setSeniorities] = useState<Seniority[]>([]);
   const [criteria, setCriteria] = useState<LibraryCriteria[]>([]);
 
   const [editingTech, setEditingTech] = useState<Technology | null>(null);
+  const [editingSeniority, setEditingSeniority] = useState<Seniority | null>(null);
   const [editingCriteria, setEditingCriteria] = useState<LibraryCriteria | null>(null);
 
   useEffect(() => {
@@ -19,6 +21,7 @@ const Settings = () => {
 
   const loadData = () => {
     setTechnologies(api.getTechnologies());
+    setSeniorities(api.getSeniorities());
     setCriteria(api.getLibraryCriteria());
   };
 
@@ -35,6 +38,23 @@ const Settings = () => {
   const deleteTech = (id: string) => {
     if (confirm('Tem certeza que deseja excluir esta tecnologia ou metodologia?')) {
       api.deleteTechnology(id);
+      loadData();
+    }
+  };
+
+  // Seniority Handlers
+  const saveSeniority = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingSeniority && editingSeniority.name.trim()) {
+      api.saveSeniority(editingSeniority);
+      setEditingSeniority(null);
+      loadData();
+    }
+  };
+
+  const deleteSeniority = (id: string) => {
+    if (confirm('Tem certeza que deseja excluir esta senioridade?')) {
+      api.deleteSeniority(id);
       loadData();
     }
   };
@@ -108,6 +128,68 @@ const Settings = () => {
                     <Edit size={16} />
                   </button>
                   <button className="btn btn-outline" style={{ padding: '0.25rem', border: 'none', color: 'var(--danger)' }} onClick={() => deleteTech(t.id)}>
+                    <Trash2 size={16} />
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  const renderSeniorityTab = () => (
+    <div className="card" style={{ padding: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', alignItems: 'center' }}>
+        <h3 style={{ color: 'var(--primary)', margin: 0 }}>Cadastro de Senioridade</h3>
+        <button 
+          className="btn btn-primary" 
+          onClick={() => setEditingSeniority({ id: uuidv4(), name: '' })}
+          style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
+        >
+          <Plus size={16} /> Nova Senioridade
+        </button>
+      </div>
+
+      {editingSeniority && (
+        <form onSubmit={saveSeniority} style={{ marginBottom: '1.5rem', padding: '1rem', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-main)' }}>
+          <div className="form-group" style={{ marginBottom: '1rem' }}>
+            <label className="form-label">Nome da Senioridade</label>
+            <input 
+              autoFocus
+              className="form-control" 
+              value={editingSeniority.name} 
+              onChange={(e) => setEditingSeniority({ ...editingSeniority, name: e.target.value })} 
+              required
+            />
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+            <button type="button" className="btn btn-outline" onClick={() => setEditingSeniority(null)}><X size={16} /> Cancelar</button>
+            <button type="submit" className="btn btn-primary"><Save size={16} /> Salvar</button>
+          </div>
+        </form>
+      )}
+
+      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <thead>
+          <tr style={{ borderBottom: '1px solid var(--border)' }}>
+            <th style={{ padding: '0.75rem 0' }}>Nome</th>
+            <th style={{ padding: '0.75rem 0', width: '100px', textAlign: 'right' }}>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {seniorities.length === 0 ? (
+            <tr><td colSpan={2} style={{ padding: '1rem 0', textAlign: 'center', color: 'var(--text-muted)' }}>Nenhuma senioridade cadastrada.</td></tr>
+          ) : (
+            seniorities.map(s => (
+              <tr key={s.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                <td style={{ padding: '0.75rem 0', fontWeight: 500 }}>{s.name}</td>
+                <td style={{ padding: '0.75rem 0', textAlign: 'right' }}>
+                  <button className="btn btn-outline" style={{ padding: '0.25rem', marginRight: '0.25rem', border: 'none' }} onClick={() => setEditingSeniority(s)}>
+                    <Edit size={16} />
+                  </button>
+                  <button className="btn btn-outline" style={{ padding: '0.25rem', border: 'none', color: 'var(--danger)' }} onClick={() => deleteSeniority(s.id)}>
                     <Trash2 size={16} />
                   </button>
                 </td>
@@ -259,12 +341,24 @@ const Settings = () => {
         >
           Cadastro de Tecnologias e Metodologias
         </button>
+        <button 
+          style={{ 
+            background: 'none', border: 'none', padding: '1rem 0', cursor: 'pointer',
+            borderBottom: activeTab === 'seniorities' ? '2px solid var(--primary)' : '2px solid transparent',
+            color: activeTab === 'seniorities' ? 'var(--primary)' : 'var(--text-muted)',
+            fontWeight: activeTab === 'seniorities' ? 600 : 500
+          }}
+          onClick={() => setActiveTab('seniorities')}
+        >
+          Cadastro de Senioridade
+        </button>
       </div>
 
       <div className="animate-fade-in">
         {activeTab === 'techs' && renderTechTab()}
         {activeTab === 'behavioral' && renderCriteriaTab('Comportamental')}
         {activeTab === 'technical' && renderCriteriaTab('Técnico')}
+        {activeTab === 'seniorities' && renderSeniorityTab()}
       </div>
     </div>
   );

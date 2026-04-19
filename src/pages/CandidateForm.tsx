@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { api } from '../services/api';
-import type { Candidate, Technology } from '../types';
+import type { Candidate, Technology, Seniority } from '../types';
 import { Save, ArrowLeft, Upload } from 'lucide-react';
 
 
@@ -34,9 +34,11 @@ const CandidateForm = () => {
 
   const [fileName, setFileName] = useState('');
   const [availableTechs, setAvailableTechs] = useState<Technology[]>([]);
+  const [availableSeniorities, setAvailableSeniorities] = useState<Seniority[]>([]);
 
   useEffect(() => {
     setAvailableTechs(api.getTechnologies());
+    setAvailableSeniorities(api.getSeniorities());
     if (isEditing && id) {
       const candidate = api.getCandidateById(id);
       if (candidate) {
@@ -140,10 +142,10 @@ const CandidateForm = () => {
             <div className="form-group">
               <label className="form-label">Senioridade *</label>
               <select required className="form-control" name="seniority" value={formData.seniority} onChange={handleChange}>
-                <option value="Júnior">Júnior</option>
-                <option value="Pleno">Pleno</option>
-                <option value="Sênior">Sênior</option>
-                <option value="Especialista">Especialista</option>
+                <option value="">Selecione...</option>
+                {availableSeniorities.map(s => (
+                  <option key={s.id} value={s.name}>{s.name}</option>
+                ))}
               </select>
             </div>
             

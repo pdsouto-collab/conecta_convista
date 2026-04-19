@@ -44,6 +44,12 @@ export const api = {
       defaultTechs.forEach(t => api.saveTechnology({ id: t.toLowerCase(), name: t }));
     }
 
+    const existingSeniorities = api.getSeniorities();
+    if (existingSeniorities.length === 0) {
+      const defaultSeniorities = ['Júnior', 'Pleno', 'Sênior', 'Especialista'];
+      defaultSeniorities.forEach(s => api.saveSeniority({ id: s.toLowerCase(), name: s }));
+    }
+
     const existing = api.getCandidates();
     if (existing.length > 0) return;
     
@@ -108,6 +114,25 @@ export const api = {
     const arr = api.getLibraryCriteria();
     const filtered = arr.filter((c) => c.id !== id);
     localStorage.setItem('@conecta_convista_criteria', JSON.stringify(filtered));
+  },
+
+  // --- SENIORITIES ---
+  getSeniorities: (): import('../types').Seniority[] => {
+    const data = localStorage.getItem('@conecta_convista_seniorities');
+    if (!data) return [];
+    try { return JSON.parse(data); } catch { return []; }
+  },
+  saveSeniority: (seniority: import('../types').Seniority): void => {
+    const arr = api.getSeniorities();
+    const existingIndex = arr.findIndex((s) => s.id === seniority.id);
+    if (existingIndex >= 0) { arr[existingIndex] = seniority; }
+    else { arr.push(seniority); }
+    localStorage.setItem('@conecta_convista_seniorities', JSON.stringify(arr));
+  },
+  deleteSeniority: (id: string): void => {
+    const arr = api.getSeniorities();
+    const filtered = arr.filter((s) => s.id !== id);
+    localStorage.setItem('@conecta_convista_seniorities', JSON.stringify(filtered));
   }
 };
 

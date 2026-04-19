@@ -1,6 +1,11 @@
 export type CandidateStatus = 'Novo' | 'Em Andamento' | 'Aprovado' | 'Reprovado' | 'Vaga Congelada';
 export type WorkAvailability = 'Presencial' | 'Híbrido' | 'Remoto';
-export type SeniorityLevel = 'Júnior' | 'Pleno' | 'Sênior' | 'Especialista';
+export type SeniorityLevel = string;
+
+export type Seniority = {
+  id: string;
+  name: string;
+};
 
 export type EvaluationMatrix = {
   id: string;

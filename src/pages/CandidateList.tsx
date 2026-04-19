@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import type { Candidate } from '../types';
+import type { Candidate, Technology } from '../types';
 import { Search, Filter, Plus, FileText, ExternalLink } from 'lucide-react';
 
 const CandidateList = () => {
@@ -9,15 +9,17 @@ const CandidateList = () => {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [moduleFilter, setModuleFilter] = useState('');
+  const [technologies, setTechnologies] = useState<Technology[]>([]);
 
   useEffect(() => {
     setCandidates(api.getCandidates());
+    setTechnologies(api.getTechnologies());
   }, []);
 
   const filteredCandidates = candidates.filter((c) => {
     const matchSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                         c.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchModule = moduleFilter ? c.sapModules.some(m => m.toLowerCase().includes(moduleFilter.toLowerCase())) : true;
+    const matchModule = moduleFilter ? c.technologies.some(m => m.toLowerCase().includes(moduleFilter.toLowerCase())) : true;
     return matchSearch && matchModule;
   });
 
@@ -55,13 +57,10 @@ const CandidateList = () => {
               onChange={(e) => setModuleFilter(e.target.value)}
               style={{ paddingLeft: '2.5rem', appearance: 'none' }}
             >
-              <option value="">Todos os Módulos SAP</option>
-              <option value="FI">FI (Finance)</option>
-              <option value="CO">CO (Controlling)</option>
-              <option value="MM">MM (Materials Management)</option>
-              <option value="SD">SD (Sales & Distribution)</option>
-              <option value="HCM">HCM (Human Capital Management)</option>
-              <option value="ABAP">ABAP</option>
+              <option value="">Todas as Tecnologias e Metodologias</option>
+              {technologies.map(t => (
+                <option key={t.id} value={t.name}>{t.name}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -74,7 +73,7 @@ const CandidateList = () => {
               <tr style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'var(--bg-main)' }}>
                 <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-main)' }}>Candidato</th>
                 <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-main)' }}>Senioridade</th>
-                <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-main)' }}>Módulos SAP</th>
+                <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-main)' }}>Tecnologias e Metodologias</th>
                 <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-main)' }}>Status</th>
                 <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-main)', textAlign: 'right' }}>Ações</th>
               </tr>
@@ -93,7 +92,7 @@ const CandidateList = () => {
                   </td>
                   <td style={{ padding: '1rem 1.5rem' }}>
                     <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                      {candidate.sapModules.map(m => (
+                      {candidate.technologies.map(m => (
                         <span key={m} style={{ backgroundColor: 'var(--bg-main)', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', color: 'var(--text-main)' }}>
                           {m}
                         </span>

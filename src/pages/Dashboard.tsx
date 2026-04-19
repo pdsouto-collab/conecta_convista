@@ -56,7 +56,7 @@ const Dashboard = () => {
                   <th style={{ padding: '1rem 0', fontWeight: 500 }}>Nome</th>
                   <th style={{ padding: '1rem 0', fontWeight: 500 }}>E-mail</th>
                   <th style={{ padding: '1rem 0', fontWeight: 500 }}>Senioridade</th>
-                  <th style={{ padding: '1rem 0', fontWeight: 500 }}>Módulos SAP</th>
+                  <th style={{ padding: '1rem 0', fontWeight: 500 }}>Tecnologia/Metodologia</th>
                   <th style={{ padding: '1rem 0', fontWeight: 500 }}>Status</th>
                 </tr>
               </thead>
@@ -66,7 +66,7 @@ const Dashboard = () => {
                     <td style={{ padding: '1rem 0', fontWeight: 500, color: 'var(--primary)' }}>{c.name}</td>
                     <td style={{ padding: '1rem 0', color: 'var(--text-muted)' }}>{c.email}</td>
                     <td style={{ padding: '1rem 0' }}>{c.seniority}</td>
-                    <td style={{ padding: '1rem 0' }}>{c.sapModules.join(', ')}</td>
+                    <td style={{ padding: '1rem 0' }}>{c.technologies.join(', ')}</td>
                     <td style={{ padding: '1rem 0' }}>
                       <span style={{
                         padding: '0.25rem 0.5rem',

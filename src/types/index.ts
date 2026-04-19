@@ -15,7 +15,7 @@ export type Candidate = {
   email: string;
   phone: string;
   linkedin: string;
-  sapModules: string[];
+  technologies: string[];
   availability: WorkAvailability;
   seniority: SeniorityLevel;
   cvFile?: string; // base64 representation or simple URL for mockup

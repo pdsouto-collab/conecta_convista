@@ -2,10 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { api } from '../services/api';
-import type { Candidate } from '../types';
+import type { Candidate, Technology } from '../types';
 import { Save, ArrowLeft, Upload } from 'lucide-react';
 
-const SAP_MODULES = ['FI', 'CO', 'MM', 'SD', 'PP', 'HCM', 'ABAP', 'Basis', 'PI/PO', 'BW/BI', 'BPC'];
 
 const CandidateForm = () => {
   const navigate = useNavigate();
@@ -17,7 +16,7 @@ const CandidateForm = () => {
     email: '',
     phone: '',
     linkedin: '',
-    sapModules: [],
+    technologies: [],
     availability: 'Híbrido',
     seniority: 'Pleno',
     status: 'Novo',
@@ -34,8 +33,10 @@ const CandidateForm = () => {
   });
 
   const [fileName, setFileName] = useState('');
+  const [availableTechs, setAvailableTechs] = useState<Technology[]>([]);
 
   useEffect(() => {
+    setAvailableTechs(api.getTechnologies());
     if (isEditing && id) {
       const candidate = api.getCandidateById(id);
       if (candidate) {
@@ -54,11 +55,11 @@ const CandidateForm = () => {
 
   const handleModuleToggle = (module: string) => {
     setFormData(prev => {
-      const modules = prev.sapModules || [];
+      const modules = prev.technologies || [];
       if (modules.includes(module)) {
-        return { ...prev, sapModules: modules.filter(m => m !== module) };
+        return { ...prev, technologies: modules.filter(m => m !== module) };
       } else {
-        return { ...prev, sapModules: [...modules, module] };
+        return { ...prev, technologies: [...modules, module] };
       }
     });
   };
@@ -157,27 +158,28 @@ const CandidateForm = () => {
           </div>
 
           <div className="form-group" style={{ marginTop: '1rem' }}>
-            <label className="form-label">Módulos SAP de Atuação *</label>
+            <label className="form-label">Tecnologias e Metodologias *</label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
-              {SAP_MODULES.map(module => (
+              {availableTechs.length === 0 && <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Nenhuma cadastrada. Adicione nas configurações.</span>}
+              {availableTechs.map(tech => (
                 <button
-                  key={module}
+                  key={tech.id}
                   type="button"
-                  onClick={() => handleModuleToggle(module)}
+                  onClick={() => handleModuleToggle(tech.name)}
                   style={{
                     padding: '0.5rem 1rem',
                     borderRadius: '2rem',
                     border: '1px solid',
-                    borderColor: formData.sapModules?.includes(module) ? 'var(--primary)' : 'var(--border)',
-                    backgroundColor: formData.sapModules?.includes(module) ? 'var(--primary)' : 'transparent',
-                    color: formData.sapModules?.includes(module) ? 'white' : 'var(--text-main)',
+                    borderColor: formData.technologies?.includes(tech.name) ? 'var(--primary)' : 'var(--border)',
+                    backgroundColor: formData.technologies?.includes(tech.name) ? 'var(--primary)' : 'transparent',
+                    color: formData.technologies?.includes(tech.name) ? 'white' : 'var(--text-main)',
                     fontSize: '0.875rem',
                     fontWeight: 500,
                     cursor: 'pointer',
                     transition: 'all 0.2s'
                   }}
                 >
-                  {module}
+                  {tech.name}
                 </button>
               ))}
             </div>

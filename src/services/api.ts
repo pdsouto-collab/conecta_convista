@@ -47,7 +47,7 @@ export const api = {
       email: 'joao.silva@example.com',
       phone: '(11) 98765-4321',
       linkedin: 'linkedin.com/in/joaosilva',
-      sapModules: ['FI', 'CO'],
+      technologies: ['FI', 'CO'],
       availability: 'Híbrido',
       seniority: 'Pleno',
       createdAt: new Date().toISOString(),

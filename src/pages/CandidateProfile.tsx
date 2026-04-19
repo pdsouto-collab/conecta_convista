@@ -202,14 +202,14 @@ const CandidateProfile = () => {
             )}
           </div>
 
-          <h4 style={{ marginBottom: '1rem' }}>Módulos SAP</h4>
+          <h4 style={{ marginBottom: '1rem' }}>Tecnologias e Metodologias</h4>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '2rem' }}>
-            {candidate.sapModules.map(m => (
+            {candidate.technologies.map(m => (
               <span key={m} style={{ backgroundColor: 'var(--primary)', color: 'white', padding: '0.25rem 0.75rem', borderRadius: '1rem', fontSize: '0.75rem', fontWeight: 500 }}>
                 {m}
               </span>
             ))}
-            {candidate.sapModules.length === 0 && <span style={{ color: 'var(--text-muted)' }}>Nenhum módulo informado</span>}
+            {candidate.technologies.length === 0 && <span style={{ color: 'var(--text-muted)' }}>Nenhum item informado</span>}
           </div>
 
           <h4 style={{ marginBottom: '1rem' }}>Currículo</h4>

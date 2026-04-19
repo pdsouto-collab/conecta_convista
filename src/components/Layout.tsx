@@ -65,7 +65,7 @@ const Layout = () => {
                location.pathname.startsWith('/candidates') ? 'Candidatos' : ''}
             </span>
           </div>
-          <div className="header-actions">
+          <div className="header-actions" onClick={() => navigate('/profile')} title="Acessar Meu Perfil">
             <div className="avatar">
               {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
             </div>

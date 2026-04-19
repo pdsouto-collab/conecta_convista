@@ -8,6 +8,7 @@ import CandidateProfile from './pages/CandidateProfile';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Users from './pages/Users';
+import Profile from './pages/Profile';
 
 const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
@@ -32,6 +33,7 @@ function AppRoutes() {
           <Route path="candidates/:id" element={<CandidateProfile />} />
           <Route path="settings" element={<Settings />} />
           <Route path="users" element={<Users />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
       </Routes>
     </Router>

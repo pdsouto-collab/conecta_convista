@@ -126,6 +126,14 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-md);
+  transition: background-color 0.2s;
+}
+
+.header-actions:hover {
+  background-color: var(--bg-surface-hover);
 }
 
 .avatar {
@@ -144,6 +152,11 @@
 .user-name {
   font-weight: 500;
   font-size: 0.875rem;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
 }
 
 .content-area {

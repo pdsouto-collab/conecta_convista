@@ -163,7 +163,7 @@ const Users = () => {
                     padding: '0.25rem 0.5rem', 
                     borderRadius: '4px', 
                     fontSize: '0.75rem', 
-                    color: u.role === 'admin' ? 'var(--danger)' : u.role === 'hr' ? 'var(--primary)' : 'var(--accent)',
+                    color: u.role === 'hr' || u.role === 'admin' ? 'var(--danger)' : 'var(--accent)',
                     fontWeight: 600
                   }}>
                     {getRoleName(u.role)}

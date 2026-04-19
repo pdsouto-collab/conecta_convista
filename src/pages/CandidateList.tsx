@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../services/api';
 import type { Candidate, Technology } from '../types';
-import { Search, Filter, Plus, FileText, ExternalLink, Edit, Trash2 } from 'lucide-react';
+import { Search, Filter, Plus, FileText, ExternalLink, Edit, Trash2, X } from 'lucide-react';
 
 const CandidateList = () => {
   const navigate = useNavigate();
@@ -95,6 +95,16 @@ const CandidateList = () => {
               <option value="Vaga Congelada">Vaga Congelada</option>
             </select>
           </div>
+          {(searchTerm || moduleFilter || statusFilter) && (
+            <button 
+              className="btn btn-outline"
+              style={{ color: 'var(--danger)', borderColor: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+              onClick={() => navigate('/dashboard')}
+              title="Limpar filtros e voltar para o Dashboard"
+            >
+              <X size={18} /> Fechar Filtros
+            </button>
+          )}
         </div>
       </div>
 

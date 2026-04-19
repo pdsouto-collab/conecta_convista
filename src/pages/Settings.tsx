@@ -33,7 +33,7 @@ const Settings = () => {
   };
 
   const deleteTech = (id: string) => {
-    if (confirm('Tem certeza que deseja excluir esta tecnologia?')) {
+    if (confirm('Tem certeza que deseja excluir esta tecnologia ou metodologia?')) {
       api.deleteTechnology(id);
       loadData();
     }
@@ -60,20 +60,20 @@ const Settings = () => {
   const renderTechTab = () => (
     <div className="card" style={{ padding: '2rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', alignItems: 'center' }}>
-        <h3 style={{ color: 'var(--primary)', margin: 0 }}>Cadastro de Tecnologias</h3>
+        <h3 style={{ color: 'var(--primary)', margin: 0 }}>Cadastro de Tecnologias e Metodologias</h3>
         <button 
           className="btn btn-primary" 
           onClick={() => setEditingTech({ id: uuidv4(), name: '' })}
           style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
         >
-          <Plus size={16} /> Nova Tecnologia
+          <Plus size={16} /> Nova Tecnologia/Metodologia
         </button>
       </div>
 
       {editingTech && (
         <form onSubmit={saveTech} style={{ marginBottom: '1.5rem', padding: '1rem', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-main)' }}>
           <div className="form-group" style={{ marginBottom: '1rem' }}>
-            <label className="form-label">Nome da Tecnologia</label>
+            <label className="form-label">Nome da Tecnologia ou Metodologia</label>
             <input 
               autoFocus
               className="form-control" 
@@ -98,7 +98,7 @@ const Settings = () => {
         </thead>
         <tbody>
           {technologies.length === 0 ? (
-            <tr><td colSpan={2} style={{ padding: '1rem 0', textAlign: 'center', color: 'var(--text-muted)' }}>Nenhuma tecnologia cadastrada.</td></tr>
+            <tr><td colSpan={2} style={{ padding: '1rem 0', textAlign: 'center', color: 'var(--text-muted)' }}>Nenhuma tecnologia ou metodologia cadastrada.</td></tr>
           ) : (
             technologies.map(t => (
               <tr key={t.id} style={{ borderBottom: '1px solid var(--border)' }}>
@@ -150,13 +150,13 @@ const Settings = () => {
             
             {type === 'Técnico' && (
               <div className="form-group" style={{ marginBottom: '1rem' }}>
-                <label className="form-label">Relacionar com Tecnologia (Opcional)</label>
+                <label className="form-label">Relacionar com Tecnologia/Metodologia (Opcional)</label>
                 <select 
                   className="form-control"
                   value={editingCriteria.technologyId || ''}
                   onChange={(e) => setEditingCriteria({ ...editingCriteria, technologyId: e.target.value })}
                 >
-                  <option value="">Nenhuma Tecnologia</option>
+                  <option value="">Nenhuma Tecnologia/Metodologia</option>
                   {technologies.map(t => (
                     <option key={t.id} value={t.id}>{t.name}</option>
                   ))}
@@ -175,7 +175,7 @@ const Settings = () => {
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)' }}>
               <th style={{ padding: '0.75rem 0' }}>Nome</th>
-              {type === 'Técnico' && <th style={{ padding: '0.75rem 0' }}>Tecnologia Vinculada</th>}
+              {type === 'Técnico' && <th style={{ padding: '0.75rem 0' }}>Tecnologia/Metodologia Vinculada</th>}
               <th style={{ padding: '0.75rem 0', width: '100px', textAlign: 'right' }}>Ações</th>
             </tr>
           </thead>
@@ -221,7 +221,7 @@ const Settings = () => {
         <SettingsIcon size={32} style={{ color: 'var(--primary)' }} />
         <div>
           <h1 style={{ fontSize: '1.875rem', margin: 0 }}>Configurações</h1>
-          <p style={{ color: 'var(--text-muted)' }}>Gerencie a Biblioteca de Quesitos e Tecnologias.</p>
+          <p style={{ color: 'var(--text-muted)' }}>Gerencie a Biblioteca de Quesitos, Tecnologias e Metodologias.</p>
         </div>
       </div>
 
@@ -257,7 +257,7 @@ const Settings = () => {
           }}
           onClick={() => setActiveTab('techs')}
         >
-          Cadastro de Tecnologias
+          Cadastro de Tecnologias e Metodologias
         </button>
       </div>
 

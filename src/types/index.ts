@@ -1,4 +1,4 @@
-export type CandidateStatus = 'Novo' | 'Em Andamento' | 'Aprovado' | 'Reprovado';
+export type CandidateStatus = 'Novo' | 'Em Andamento' | 'Aprovado' | 'Reprovado' | 'Vaga Congelada';
 export type WorkAvailability = 'Presencial' | 'Híbrido' | 'Remoto';
 export type SeniorityLevel = 'Júnior' | 'Pleno' | 'Sênior' | 'Especialista';
 

@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import type { Candidate } from '../types';
-import { Users, UserCheck, Clock, Layers } from 'lucide-react';
+import { Users, UserCheck, Clock, Layers, XCircle, Snowflake } from 'lucide-react';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [candidates, setCandidates] = useState<Candidate[]>([]);
 
   useEffect(() => {
@@ -11,10 +13,12 @@ const Dashboard = () => {
   }, []);
 
   const stats = [
-    { label: 'Total de Candidatos', value: candidates.length, icon: Users, color: 'var(--primary)' },
-    { label: 'Novos', value: candidates.filter(c => c.status === 'Novo').length, icon: Layers, color: 'var(--info)' },
-    { label: 'Em Andamento', value: candidates.filter(c => c.status === 'Em Andamento').length, icon: Clock, color: 'var(--warning)' },
-    { label: 'Aprovados', value: candidates.filter(c => c.status === 'Aprovado').length, icon: UserCheck, color: 'var(--success)' },
+    { label: 'Total de Candidatos', value: candidates.length, icon: Users, color: 'var(--primary)', filterValue: '' },
+    { label: 'Novos', value: candidates.filter(c => c.status === 'Novo').length, icon: Layers, color: 'var(--info)', filterValue: 'Novo' },
+    { label: 'Em Andamento', value: candidates.filter(c => c.status === 'Em Andamento').length, icon: Clock, color: 'var(--warning)', filterValue: 'Em Andamento' },
+    { label: 'Aprovados', value: candidates.filter(c => c.status === 'Aprovado').length, icon: UserCheck, color: 'var(--success)', filterValue: 'Aprovado' },
+    { label: 'Reprovados', value: candidates.filter(c => c.status === 'Reprovado').length, icon: XCircle, color: 'var(--danger)', filterValue: 'Reprovado' },
+    { label: 'Vaga Congelada', value: candidates.filter(c => c.status === 'Vaga Congelada').length, icon: Snowflake, color: '#64748b', filterValue: 'Vaga Congelada' },
   ];
 
   return (
@@ -26,7 +30,14 @@ const Dashboard = () => {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
         {stats.map((stat, idx) => (
-          <div key={idx} className="card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+          <div 
+            key={idx} 
+            className="card stat-card" 
+            style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem', cursor: 'pointer', transition: 'transform 0.2s', border: '1px solid transparent' }}
+            onClick={() => navigate('/candidates', { state: { statusFilter: stat.filterValue } })}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+          >
             <div style={{ 
               backgroundColor: `${stat.color}20`, // 20% opacity 
               color: stat.color,
@@ -73,7 +84,7 @@ const Dashboard = () => {
                         borderRadius: '1rem',
                         fontSize: '0.75rem',
                         fontWeight: 600,
-                        backgroundColor: c.status === 'Aprovado' ? 'var(--success)' : c.status === 'Novo' ? 'var(--info)' : 'var(--warning)',
+                        backgroundColor: c.status === 'Aprovado' ? 'var(--success)' : c.status === 'Novo' ? 'var(--info)' : c.status === 'Reprovado' ? 'var(--danger)' : c.status === 'Vaga Congelada' ? '#64748b' : 'var(--warning)',
                         color: 'white'
                       }}>
                         {c.status}

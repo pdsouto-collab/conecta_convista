@@ -162,6 +162,7 @@ const CandidateProfile = () => {
             <option value="Em Andamento">Em Andamento</option>
             <option value="Aprovado">Aprovado</option>
             <option value="Reprovado">Reprovado</option>
+            <option value="Vaga Congelada">Vaga Congelada</option>
           </select>
           <button className="btn btn-primary" onClick={saveCandidate}>
             <CheckCircle size={18} /> Salvar Avaliação

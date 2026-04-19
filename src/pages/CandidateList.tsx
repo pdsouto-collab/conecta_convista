@@ -1,20 +1,28 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../services/api';
 import type { Candidate, Technology } from '../types';
 import { Search, Filter, Plus, FileText, ExternalLink, Edit, Trash2 } from 'lucide-react';
 
 const CandidateList = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [moduleFilter, setModuleFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState(location.state?.statusFilter || '');
   const [technologies, setTechnologies] = useState<Technology[]>([]);
 
   useEffect(() => {
     setCandidates(api.getCandidates());
     setTechnologies(api.getTechnologies());
   }, []);
+
+  useEffect(() => {
+    if (location.state && typeof location.state.statusFilter !== 'undefined') {
+      setStatusFilter(location.state.statusFilter);
+    }
+  }, [location.state]);
 
   const handleDelete = (id: string, name: string) => {
     if (window.confirm(`Tem certeza que deseja excluir o candidato ${name}?`)) {
@@ -27,7 +35,8 @@ const CandidateList = () => {
     const matchSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                         c.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchModule = moduleFilter ? c.technologies.some(m => m.toLowerCase().includes(moduleFilter.toLowerCase())) : true;
-    return matchSearch && matchModule;
+    const matchStatus = statusFilter ? c.status === statusFilter : true;
+    return matchSearch && matchModule && matchStatus;
   });
 
   return (
@@ -68,6 +77,22 @@ const CandidateList = () => {
               {technologies.map(t => (
                 <option key={t.id} value={t.name}>{t.name}</option>
               ))}
+            </select>
+          </div>
+          <div style={{ flex: '1 1 200px', position: 'relative' }}>
+            <Filter size={18} style={{ position: 'absolute', top: '0.75rem', left: '0.875rem', color: 'var(--text-light)' }} />
+            <select 
+              className="form-control" 
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              style={{ paddingLeft: '2.5rem', appearance: 'none' }}
+            >
+              <option value="">Todos os Status</option>
+              <option value="Novo">Novo</option>
+              <option value="Em Andamento">Em Andamento</option>
+              <option value="Aprovado">Aprovado</option>
+              <option value="Reprovado">Reprovado</option>
+              <option value="Vaga Congelada">Vaga Congelada</option>
             </select>
           </div>
         </div>

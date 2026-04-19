@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../services/api';
 import type { Candidate, Technology } from '../types';
-import { Search, Filter, Plus, FileText, Edit, Trash2, X, ClipboardList } from 'lucide-react';
+import { Search, Filter, Plus, FileText, Edit, Trash2, X, ClipboardList, Upload } from 'lucide-react';
+import { useRef } from 'react';
 
 const CandidateList = () => {
   const navigate = useNavigate();
@@ -11,6 +12,8 @@ const CandidateList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [moduleFilter, setModuleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState(location.state?.statusFilter || '');
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Advanced filters
   const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
@@ -40,6 +43,15 @@ const CandidateList = () => {
     if (window.confirm(`Tem certeza que deseja excluir o candidato ${name}?`)) {
       api.deleteCandidate(id);
       setCandidates(api.getCandidates());
+    }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      alert(`Arquivo ${file.name} selecionado! A integração com o layout CSV será implementada em breve.`);
+      // Limpa o input para permitir selecionar o mesmo arquivo novamente, se necessário
+      e.target.value = '';
     }
   };
 
@@ -99,10 +111,23 @@ const CandidateList = () => {
           <h1 style={{ fontSize: '1.875rem', marginBottom: '0.5rem' }}>Candidatos</h1>
           <p style={{ color: 'var(--text-muted)' }}>Gerencie e filtre o banco de currículos.</p>
         </div>
-        <button className="btn btn-accent" onClick={() => navigate('/candidates/new')}>
-          <Plus size={18} />
-          <span>Novo Candidato</span>
-        </button>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <input 
+            type="file" 
+            accept=".csv" 
+            style={{ display: 'none' }} 
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+          />
+          <button className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }} onClick={() => fileInputRef.current?.click()}>
+            <Upload size={18} />
+            <span>Importar CSV</span>
+          </button>
+          <button className="btn btn-accent" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }} onClick={() => navigate('/candidates/new')}>
+            <Plus size={18} />
+            <span>Novo Candidato</span>
+          </button>
+        </div>
       </div>
 
       <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>

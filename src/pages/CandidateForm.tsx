@@ -62,6 +62,27 @@ const CandidateForm = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleCurrencyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    let numericValue = value.replace(/\D/g, "");
+    
+    if (numericValue === "") {
+      setFormData(prev => ({ ...prev, [name]: "" }));
+      return;
+    }
+    
+    const numberValue = parseInt(numericValue, 10) / 100;
+    
+    const formattedValue = new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(numberValue);
+    
+    const customFormat = formattedValue.replace(/^R\$\s?/, 'BRL ');
+    
+    setFormData(prev => ({ ...prev, [name]: customFormat }));
+  };
+
   const handleModuleToggle = (module: string) => {
     setFormData(prev => {
       const modules = prev.technologies || [];
@@ -201,12 +222,12 @@ const CandidateForm = () => {
           <div className="grid-2">
             <div className="form-group">
               <label className="form-label">Pretensão Salarial PJ (BRL)</label>
-              <input type="text" className="form-control" name="salaryExpectationPJ" value={formData.salaryExpectationPJ || ''} onChange={handleChange} placeholder="R$ 0,00" />
+              <input type="text" className="form-control" name="salaryExpectationPJ" value={formData.salaryExpectationPJ || ''} onChange={handleCurrencyChange} placeholder="BRL 0,00" />
             </div>
             
             <div className="form-group">
               <label className="form-label">Pretensão Salarial CLT (BRL)</label>
-              <input type="text" className="form-control" name="salaryExpectationCLT" value={formData.salaryExpectationCLT || ''} onChange={handleChange} placeholder="R$ 0,00" />
+              <input type="text" className="form-control" name="salaryExpectationCLT" value={formData.salaryExpectationCLT || ''} onChange={handleCurrencyChange} placeholder="BRL 0,00" />
             </div>
 
             <div className="form-group">

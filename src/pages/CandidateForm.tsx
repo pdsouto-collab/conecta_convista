@@ -44,6 +44,11 @@ const CandidateForm = () => {
   const [availableSeniorities, setAvailableSeniorities] = useState<Seniority[]>([]);
 
   useEffect(() => {
+    const statuses = api.getStatuses();
+    const firstStatus = statuses.length > 0 ? statuses[0].name : 'Novo';
+    
+    setFormData(prev => ({ ...prev, status: prev.status || firstStatus }));
+
     setAvailableTechs(api.getTechnologies());
     setAvailableSeniorities(api.getSeniorities());
     if (isEditing && id) {

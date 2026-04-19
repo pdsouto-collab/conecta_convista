@@ -94,9 +94,11 @@ const CandidateProfile = () => {
   const { id } = useParams();
   const [candidate, setCandidate] = useState<Candidate | null>(null);
   const [libraryCriteria, setLibraryCriteria] = useState<import('../types').LibraryCriteria[]>([]);
+  const [availableStatuses, setAvailableStatuses] = useState<import('../types').CandidateStatusOption[]>([]);
 
   useEffect(() => {
     setLibraryCriteria(api.getLibraryCriteria());
+    setAvailableStatuses(api.getStatuses());
     if (id) {
       const data = api.getCandidateById(id);
       if (data) setCandidate(data);
@@ -169,11 +171,9 @@ const CandidateProfile = () => {
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <select className="form-control" value={candidate.status} onChange={handleStatusChange} style={{ width: 'auto' }}>
-            <option value="Novo">Novo</option>
-            <option value="Em Andamento">Em Andamento</option>
-            <option value="Aprovado">Aprovado</option>
-            <option value="Reprovado">Reprovado</option>
-            <option value="Vaga Congelada">Vaga Congelada</option>
+            {availableStatuses.map(s => (
+              <option key={s.id} value={s.name}>{s.name}</option>
+            ))}
           </select>
           <button className="btn btn-primary" onClick={saveCandidate}>
             <CheckCircle size={18} /> Salvar Avaliação

@@ -22,10 +22,12 @@ const CandidateList = () => {
   const [maxSalaryFilterCLT, setMaxSalaryFilterCLT] = useState('');
 
   const [technologies, setTechnologies] = useState<Technology[]>([]);
+  const [availableStatuses, setAvailableStatuses] = useState<import('../types').CandidateStatusOption[]>([]);
 
   useEffect(() => {
     setCandidates(api.getCandidates());
     setTechnologies(api.getTechnologies());
+    setAvailableStatuses(api.getStatuses());
   }, []);
 
   useEffect(() => {
@@ -167,11 +169,7 @@ const CandidateList = () => {
                 <label className="form-label" style={{ fontSize: '0.75rem' }}>Status do Processo</label>
                 <select className="form-control" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                   <option value="">Todos os Status</option>
-                  <option value="Novo">Novo</option>
-                  <option value="Em Andamento">Em Andamento</option>
-                  <option value="Aprovado">Aprovado</option>
-                  <option value="Reprovado">Reprovado</option>
-                  <option value="Vaga Congelada">Vaga Congelada</option>
+                  {availableStatuses.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
                 </select>
               </div>
 

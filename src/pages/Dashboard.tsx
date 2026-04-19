@@ -7,18 +7,43 @@ import { Users, UserCheck, Clock, Layers, XCircle, Snowflake } from 'lucide-reac
 const Dashboard = () => {
   const navigate = useNavigate();
   const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const [availableStatuses, setAvailableStatuses] = useState<import('../types').CandidateStatusOption[]>([]);
 
   useEffect(() => {
     setCandidates(api.getCandidates());
+    setAvailableStatuses(api.getStatuses());
   }, []);
+
+  const getStatusColor = (statusName: string, index: number) => {
+    const term = (statusName || '').toLowerCase();
+    if (term === 'aprovado') return 'var(--success)';
+    if (term === 'reprovado') return 'var(--danger)';
+    if (term === 'novo') return 'var(--info)';
+    if (term === 'em andamento') return 'var(--warning)';
+    if (term === 'vaga congelada') return '#64748b';
+    const colors = ['#8b5cf6', '#ec4899', '#14b8a6', '#f59e0b', '#3b82f6'];
+    return colors[Math.max(0, index) % colors.length];
+  };
+
+  const getIconForStatus = (statusName: string) => {
+    const term = (statusName || '').toLowerCase();
+    if (term === 'novo') return Layers;
+    if (term === 'em andamento') return Clock;
+    if (term === 'aprovado') return UserCheck;
+    if (term === 'reprovado') return XCircle;
+    if (term === 'vaga congelada') return Snowflake;
+    return Layers;
+  };
 
   const stats = [
     { label: 'Total de Candidatos', value: candidates.length, icon: Users, color: 'var(--primary)', filterValue: '' },
-    { label: 'Novos', value: candidates.filter(c => c.status === 'Novo').length, icon: Layers, color: 'var(--info)', filterValue: 'Novo' },
-    { label: 'Em Andamento', value: candidates.filter(c => c.status === 'Em Andamento').length, icon: Clock, color: 'var(--warning)', filterValue: 'Em Andamento' },
-    { label: 'Aprovados', value: candidates.filter(c => c.status === 'Aprovado').length, icon: UserCheck, color: 'var(--success)', filterValue: 'Aprovado' },
-    { label: 'Reprovados', value: candidates.filter(c => c.status === 'Reprovado').length, icon: XCircle, color: 'var(--danger)', filterValue: 'Reprovado' },
-    { label: 'Vaga Congelada', value: candidates.filter(c => c.status === 'Vaga Congelada').length, icon: Snowflake, color: '#64748b', filterValue: 'Vaga Congelada' },
+    ...availableStatuses.map((s, idx) => ({
+      label: s.name,
+      value: candidates.filter(c => c.status === s.name).length,
+      icon: getIconForStatus(s.name),
+      color: getStatusColor(s.name, idx),
+      filterValue: s.name
+    }))
   ];
 
   return (
@@ -84,7 +109,7 @@ const Dashboard = () => {
                         borderRadius: '1rem',
                         fontSize: '0.75rem',
                         fontWeight: 600,
-                        backgroundColor: c.status === 'Aprovado' ? 'var(--success)' : c.status === 'Novo' ? 'var(--info)' : c.status === 'Reprovado' ? 'var(--danger)' : c.status === 'Vaga Congelada' ? '#64748b' : 'var(--warning)',
+                        backgroundColor: getStatusColor(c.status, availableStatuses.findIndex(s => s.name === c.status)),
                         color: 'white'
                       }}>
                         {c.status}

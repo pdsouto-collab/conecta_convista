@@ -1,21 +1,24 @@
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { api } from '../services/api';
-import type { Technology, LibraryCriteria, Seniority } from '../types';
+import type { Technology, LibraryCriteria, Seniority, CandidateStatusOption } from '../types';
 import { Settings as SettingsIcon, Trash2, Plus, Edit, Save, X, GripVertical } from 'lucide-react';
 
 const Settings = () => {
-  const [activeTab, setActiveTab] = useState<'behavioral' | 'technical' | 'techs' | 'seniorities'>('behavioral');
+  const [activeTab, setActiveTab] = useState<'behavioral' | 'technical' | 'techs' | 'seniorities' | 'statuses'>('behavioral');
   
   const [technologies, setTechnologies] = useState<Technology[]>([]);
   const [seniorities, setSeniorities] = useState<Seniority[]>([]);
+  const [statuses, setStatuses] = useState<CandidateStatusOption[]>([]);
   const [criteria, setCriteria] = useState<LibraryCriteria[]>([]);
 
   const [editingTech, setEditingTech] = useState<Technology | null>(null);
   const [editingSeniority, setEditingSeniority] = useState<Seniority | null>(null);
+  const [editingStatus, setEditingStatus] = useState<CandidateStatusOption | null>(null);
   const [editingCriteria, setEditingCriteria] = useState<LibraryCriteria | null>(null);
 
   const [draggedSeniorityId, setDraggedSeniorityId] = useState<string | null>(null);
+  const [draggedStatusId, setDraggedStatusId] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -24,6 +27,7 @@ const Settings = () => {
   const loadData = () => {
     setTechnologies(api.getTechnologies());
     setSeniorities(api.getSeniorities());
+    setStatuses(api.getStatuses());
     setCriteria(api.getLibraryCriteria());
   };
 
@@ -78,6 +82,40 @@ const Settings = () => {
     setSeniorities(newSeniorities);
     api.updateSeniorities(newSeniorities);
     setDraggedSeniorityId(null);
+  };
+
+  // Status Handlers
+  const saveStatus = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingStatus && editingStatus.name.trim()) {
+      api.saveStatus(editingStatus);
+      setEditingStatus(null);
+      loadData();
+    }
+  };
+
+  const deleteStatus = (id: string) => {
+    if (confirm('Tem certeza que deseja excluir este status?')) {
+      api.deleteStatus(id);
+      loadData();
+    }
+  };
+
+  const handleStatusDragStart = (id: string) => setDraggedStatusId(id);
+  
+  const handleStatusDrop = (targetId: string) => {
+    if (!draggedStatusId || draggedStatusId === targetId) return;
+    
+    const sourceIndex = statuses.findIndex(s => s.id === draggedStatusId);
+    const targetIndex = statuses.findIndex(s => s.id === targetId);
+    
+    const newStatuses = [...statuses];
+    const [removed] = newStatuses.splice(sourceIndex, 1);
+    newStatuses.splice(targetIndex, 0, removed);
+    
+    setStatuses(newStatuses);
+    api.updateStatuses(newStatuses);
+    setDraggedStatusId(null);
   };
 
   // Criteria Handlers
@@ -241,6 +279,87 @@ const Settings = () => {
     </div>
   );
 
+  const renderStatusTab = () => (
+    <div className="card" style={{ padding: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', alignItems: 'center' }}>
+        <h3 style={{ color: 'var(--primary)', margin: 0 }}>Cadastro de Status</h3>
+        <button 
+          className="btn btn-primary" 
+          onClick={() => setEditingStatus({ id: uuidv4(), name: '' })}
+          style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
+        >
+          <Plus size={16} /> Novo Status
+        </button>
+      </div>
+
+      {editingStatus && (
+        <form onSubmit={saveStatus} style={{ marginBottom: '1.5rem', padding: '1rem', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-main)' }}>
+          <div className="form-group" style={{ marginBottom: '1rem' }}>
+            <label className="form-label">Nome do Status</label>
+            <input 
+              autoFocus
+              className="form-control" 
+              value={editingStatus.name} 
+              onChange={(e) => setEditingStatus({ ...editingStatus, name: e.target.value })} 
+              required
+            />
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+            <button type="button" className="btn btn-outline" onClick={() => setEditingStatus(null)}><X size={16} /> Cancelar</button>
+            <button type="submit" className="btn btn-primary"><Save size={16} /> Salvar</button>
+          </div>
+        </form>
+      )}
+
+      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <thead>
+          <tr style={{ borderBottom: '1px solid var(--border)' }}>
+            <th style={{ padding: '0.75rem 0' }}>Nome</th>
+            <th style={{ padding: '0.75rem 0', width: '100px', textAlign: 'right' }}>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {statuses.length === 0 ? (
+            <tr><td colSpan={2} style={{ padding: '1rem 0', textAlign: 'center', color: 'var(--text-muted)' }}>Nenhum status cadastrado.</td></tr>
+          ) : (
+            statuses.map(s => (
+              <tr 
+                key={s.id} 
+                style={{ 
+                  borderBottom: '1px solid var(--border)',
+                  backgroundColor: draggedStatusId === s.id ? 'var(--bg-main)' : 'transparent',
+                  opacity: draggedStatusId === s.id ? 0.5 : 1
+                }}
+                draggable
+                onDragStart={() => handleStatusDragStart(s.id)}
+                onDragOver={handleDragOver}
+                onDrop={() => handleStatusDrop(s.id)}
+                onDragEnd={() => setDraggedStatusId(null)}
+              >
+                <td style={{ padding: '0.75rem 0', fontWeight: 500 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{ cursor: 'grab', display: 'flex', alignItems: 'center' }}>
+                      <GripVertical size={16} style={{ color: 'var(--text-muted)' }} />
+                    </div>
+                    {s.name}
+                  </div>
+                </td>
+                <td style={{ padding: '0.75rem 0', textAlign: 'right' }}>
+                  <button className="btn btn-outline" style={{ padding: '0.25rem', marginRight: '0.25rem', border: 'none' }} onClick={() => setEditingStatus(s)}>
+                    <Edit size={16} />
+                  </button>
+                  <button className="btn btn-outline" style={{ padding: '0.25rem', border: 'none', color: 'var(--danger)' }} onClick={() => deleteStatus(s.id)}>
+                    <Trash2 size={16} />
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+
   const renderCriteriaTab = (type: 'Comportamental' | 'Técnico') => {
     const list = criteria.filter(c => c.type === type);
 
@@ -381,25 +500,37 @@ const Settings = () => {
         >
           Cadastro de Tecnologias e Metodologias
         </button>
-        <button 
-          style={{ 
-            background: 'none', border: 'none', padding: '1rem 0', cursor: 'pointer',
-            borderBottom: activeTab === 'seniorities' ? '2px solid var(--primary)' : '2px solid transparent',
-            color: activeTab === 'seniorities' ? 'var(--primary)' : 'var(--text-muted)',
-            fontWeight: activeTab === 'seniorities' ? 600 : 500
-          }}
-          onClick={() => setActiveTab('seniorities')}
-        >
-          Cadastro de Senioridade
-        </button>
-      </div>
+          <button 
+            style={{ 
+              background: 'none', border: 'none', padding: '1rem 0', cursor: 'pointer',
+              borderBottom: activeTab === 'seniorities' ? '2px solid var(--primary)' : '2px solid transparent',
+              color: activeTab === 'seniorities' ? 'var(--primary)' : 'var(--text-muted)',
+              fontWeight: activeTab === 'seniorities' ? 600 : 500
+            }}
+            onClick={() => setActiveTab('seniorities')}
+          >
+            Senioridade
+          </button>
+          <button 
+            style={{ 
+              background: 'none', border: 'none', padding: '1rem 0', cursor: 'pointer',
+              borderBottom: activeTab === 'statuses' ? '2px solid var(--primary)' : '2px solid transparent',
+              color: activeTab === 'statuses' ? 'var(--primary)' : 'var(--text-muted)',
+              fontWeight: activeTab === 'statuses' ? 600 : 500
+            }}
+            onClick={() => setActiveTab('statuses')}
+          >
+            Status
+          </button>
+        </div>
 
-      <div className="animate-fade-in">
-        {activeTab === 'techs' && renderTechTab()}
-        {activeTab === 'behavioral' && renderCriteriaTab('Comportamental')}
-        {activeTab === 'technical' && renderCriteriaTab('Técnico')}
-        {activeTab === 'seniorities' && renderSeniorityTab()}
-      </div>
+        <div className="animate-fade-in">
+          {activeTab === 'techs' && renderTechTab()}
+          {activeTab === 'behavioral' && renderCriteriaTab('Comportamental')}
+          {activeTab === 'technical' && renderCriteriaTab('Técnico')}
+          {activeTab === 'seniorities' && renderSeniorityTab()}
+          {activeTab === 'statuses' && renderStatusTab()}
+        </div>
     </div>
   );
 };

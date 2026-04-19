@@ -50,6 +50,12 @@ export const api = {
       defaultSeniorities.forEach(s => api.saveSeniority({ id: s.toLowerCase(), name: s }));
     }
 
+    const existingStatuses = api.getStatuses();
+    if (existingStatuses.length === 0) {
+      const defaultStatuses = ['Novo', 'Em Andamento', 'Aprovado', 'Reprovado', 'Vaga Congelada'];
+      defaultStatuses.forEach(s => api.saveStatus({ id: s.toLowerCase().replace(/\s+/g, '-'), name: s }));
+    }
+
     const existingUsers = api.getUsers();
     if (existingUsers.length === 0) {
       api.saveUser({ id: 'u1', firstName: 'Admin', lastName: 'Sistema', email: 'admin@convista.com', position: 'Administrador', role: 'admin', password: 'admin', active: true });
@@ -143,6 +149,28 @@ export const api = {
     const arr = api.getSeniorities();
     const filtered = arr.filter((s) => s.id !== id);
     localStorage.setItem('@conecta_convista_seniorities', JSON.stringify(filtered));
+  },
+
+  // --- STATUSES ---
+  getStatuses: (): import('../types').CandidateStatusOption[] => {
+    const data = localStorage.getItem('@conecta_convista_statuses');
+    if (!data) return [];
+    try { return JSON.parse(data); } catch { return []; }
+  },
+  saveStatus: (status: import('../types').CandidateStatusOption): void => {
+    const arr = api.getStatuses();
+    const existingIndex = arr.findIndex((s) => s.id === status.id);
+    if (existingIndex >= 0) { arr[existingIndex] = status; }
+    else { arr.push(status); }
+    localStorage.setItem('@conecta_convista_statuses', JSON.stringify(arr));
+  },
+  updateStatuses: (statuses: import('../types').CandidateStatusOption[]): void => {
+    localStorage.setItem('@conecta_convista_statuses', JSON.stringify(statuses));
+  },
+  deleteStatus: (id: string): void => {
+    const arr = api.getStatuses();
+    const filtered = arr.filter((s) => s.id !== id);
+    localStorage.setItem('@conecta_convista_statuses', JSON.stringify(filtered));
   },
 
   // --- USERS & AUTH ---

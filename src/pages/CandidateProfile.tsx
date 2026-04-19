@@ -8,11 +8,13 @@ import { v4 as uuidv4 } from 'uuid';
 const EvaluationSection = ({ 
   title, 
   evaluations, 
+  availableCriteria,
   onAdd, 
   onChange 
 }: { 
   title: string, 
   evaluations: EvaluationMatrix[], 
+  availableCriteria: import('../types').LibraryCriteria[],
   onAdd: () => void,
   onChange: (id: string, field: string, value: any) => void 
 }) => {
@@ -31,12 +33,19 @@ const EvaluationSection = ({
             <div className="grid-2">
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Quesito Avaliado</label>
-                <input 
-                  type="text" 
+                <select 
                   className="form-control" 
                   value={ev.criteria} 
                   onChange={(e) => onChange(ev.id, 'criteria', e.target.value)} 
-                />
+                >
+                  <option value="">Selecione um quesito...</option>
+                  {ev.criteria && !availableCriteria.find(c => c.name === ev.criteria) && (
+                    <option value={ev.criteria}>{ev.criteria}</option>
+                  )}
+                  {availableCriteria.map(opt => (
+                    <option key={opt.id} value={opt.name}>{opt.name}</option>
+                  ))}
+                </select>
               </div>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Nota (1 a 5)</label>
@@ -84,8 +93,10 @@ const CandidateProfile = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [candidate, setCandidate] = useState<Candidate | null>(null);
+  const [libraryCriteria, setLibraryCriteria] = useState<import('../types').LibraryCriteria[]>([]);
 
   useEffect(() => {
+    setLibraryCriteria(api.getLibraryCriteria());
     if (id) {
       const data = api.getCandidateById(id);
       if (data) setCandidate(data);
@@ -239,6 +250,7 @@ const CandidateProfile = () => {
           <EvaluationSection 
             title="1. Parte Comportamental" 
             evaluations={candidate.behavioralEvaluation} 
+            availableCriteria={libraryCriteria.filter(c => c.type === 'Comportamental')}
             onAdd={() => handleAddEvaluation('behavioralEvaluation')}
             onChange={(id, field, value) => handleEvaluationChange('behavioralEvaluation', id, field, value)}
           />
@@ -246,6 +258,7 @@ const CandidateProfile = () => {
           <EvaluationSection 
             title="2. Parte Técnica" 
             evaluations={candidate.technicalEvaluation} 
+            availableCriteria={libraryCriteria.filter(c => c.type === 'Técnico')}
             onAdd={() => handleAddEvaluation('technicalEvaluation')}
             onChange={(id, field, value) => handleEvaluationChange('technicalEvaluation', id, field, value)}
           />

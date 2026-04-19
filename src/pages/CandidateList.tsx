@@ -149,18 +149,18 @@ const CandidateList = () => {
                       <button 
                         className="btn btn-outline" 
                         style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
-                        onClick={() => navigate(`/candidates/${candidate.id}`)}
-                        title="Avaliação da Entrevista"
-                      >
-                        <ClipboardList size={14} /> Informações de Entrevista
-                      </button>
-                      <button 
-                        className="btn btn-outline" 
-                        style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
                         onClick={() => navigate(`/candidates/${candidate.id}/edit`)}
                         title="Editar Informações"
                       >
                         <Edit size={14} /> Informações Gerais
+                      </button>
+                      <button 
+                        className="btn btn-outline" 
+                        style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
+                        onClick={() => navigate(`/candidates/${candidate.id}`)}
+                        title="Avaliação da Entrevista"
+                      >
+                        <ClipboardList size={14} /> Informações de Entrevista
                       </button>
                       <button 
                         className="btn btn-outline" 

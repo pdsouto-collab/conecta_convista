@@ -64,5 +64,44 @@ export const api = {
     };
     
     api.saveCandidate(mock);
+  },
+
+  // --- TECHNOLOGIES ---
+  getTechnologies: (): import('../types').Technology[] => {
+    const data = localStorage.getItem('@conecta_convista_techs');
+    if (!data) return [];
+    try { return JSON.parse(data); } catch { return []; }
+  },
+  saveTechnology: (tech: import('../types').Technology): void => {
+    const techs = api.getTechnologies();
+    const existingIndex = techs.findIndex((c) => c.id === tech.id);
+    if (existingIndex >= 0) { techs[existingIndex] = tech; }
+    else { techs.push(tech); }
+    localStorage.setItem('@conecta_convista_techs', JSON.stringify(techs));
+  },
+  deleteTechnology: (id: string): void => {
+    const techs = api.getTechnologies();
+    const filtered = techs.filter((c) => c.id !== id);
+    localStorage.setItem('@conecta_convista_techs', JSON.stringify(filtered));
+  },
+
+  // --- CRITERIA LIBRARY ---
+  getLibraryCriteria: (): import('../types').LibraryCriteria[] => {
+    const data = localStorage.getItem('@conecta_convista_criteria');
+    if (!data) return [];
+    try { return JSON.parse(data); } catch { return []; }
+  },
+  saveLibraryCriteria: (criteria: import('../types').LibraryCriteria): void => {
+    const arr = api.getLibraryCriteria();
+    const existingIndex = arr.findIndex((c) => c.id === criteria.id);
+    if (existingIndex >= 0) { arr[existingIndex] = criteria; }
+    else { arr.push(criteria); }
+    localStorage.setItem('@conecta_convista_criteria', JSON.stringify(arr));
+  },
+  deleteLibraryCriteria: (id: string): void => {
+    const arr = api.getLibraryCriteria();
+    const filtered = arr.filter((c) => c.id !== id);
+    localStorage.setItem('@conecta_convista_criteria', JSON.stringify(filtered));
   }
 };
+

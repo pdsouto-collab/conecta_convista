@@ -28,3 +28,17 @@ export type Candidate = {
   generalNotes: string;
   status: CandidateStatus;
 };
+
+export type Technology = {
+  id: string;
+  name: string;
+};
+
+export type LibraryCriteriaType = 'Comportamental' | 'Técnico';
+
+export type LibraryCriteria = {
+  id: string;
+  name: string;
+  type: LibraryCriteriaType;
+  technologyId?: string; // only for Técnico, optional
+};

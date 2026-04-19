@@ -36,10 +36,10 @@ const Layout = () => {
         </nav>
         
         <div className="sidebar-footer">
-          <button className="nav-item">
+          <NavLink to="/settings" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <Settings size={20} />
             <span>Configurações</span>
-          </button>
+          </NavLink>
           <button className="nav-item logout">
             <LogOut size={20} />
             <span>Sair</span>

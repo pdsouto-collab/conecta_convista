@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { api } from '../services/api';
 import type { Technology, LibraryCriteria, Seniority } from '../types';
-import { Settings as SettingsIcon, Trash2, Plus, Edit, Save, X } from 'lucide-react';
+import { Settings as SettingsIcon, Trash2, Plus, Edit, Save, X, GripVertical } from 'lucide-react';
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState<'behavioral' | 'technical' | 'techs' | 'seniorities'>('behavioral');
@@ -14,6 +14,8 @@ const Settings = () => {
   const [editingTech, setEditingTech] = useState<Technology | null>(null);
   const [editingSeniority, setEditingSeniority] = useState<Seniority | null>(null);
   const [editingCriteria, setEditingCriteria] = useState<LibraryCriteria | null>(null);
+
+  const [draggedSeniorityId, setDraggedSeniorityId] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -57,6 +59,25 @@ const Settings = () => {
       api.deleteSeniority(id);
       loadData();
     }
+  };
+
+  const handleDragStart = (id: string) => setDraggedSeniorityId(id);
+  
+  const handleDragOver = (e: React.DragEvent) => e.preventDefault();
+  
+  const handleDrop = (targetId: string) => {
+    if (!draggedSeniorityId || draggedSeniorityId === targetId) return;
+    
+    const sourceIndex = seniorities.findIndex(s => s.id === draggedSeniorityId);
+    const targetIndex = seniorities.findIndex(s => s.id === targetId);
+    
+    const newSeniorities = [...seniorities];
+    const [removed] = newSeniorities.splice(sourceIndex, 1);
+    newSeniorities.splice(targetIndex, 0, removed);
+    
+    setSeniorities(newSeniorities);
+    api.updateSeniorities(newSeniorities);
+    setDraggedSeniorityId(null);
   };
 
   // Criteria Handlers
@@ -183,8 +204,27 @@ const Settings = () => {
             <tr><td colSpan={2} style={{ padding: '1rem 0', textAlign: 'center', color: 'var(--text-muted)' }}>Nenhuma senioridade cadastrada.</td></tr>
           ) : (
             seniorities.map(s => (
-              <tr key={s.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                <td style={{ padding: '0.75rem 0', fontWeight: 500 }}>{s.name}</td>
+              <tr 
+                key={s.id} 
+                style={{ 
+                  borderBottom: '1px solid var(--border)',
+                  backgroundColor: draggedSeniorityId === s.id ? 'var(--bg-main)' : 'transparent',
+                  opacity: draggedSeniorityId === s.id ? 0.5 : 1
+                }}
+                draggable
+                onDragStart={() => handleDragStart(s.id)}
+                onDragOver={handleDragOver}
+                onDrop={() => handleDrop(s.id)}
+                onDragEnd={() => setDraggedSeniorityId(null)}
+              >
+                <td style={{ padding: '0.75rem 0', fontWeight: 500 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{ cursor: 'grab', display: 'flex', alignItems: 'center' }}>
+                      <GripVertical size={16} style={{ color: 'var(--text-muted)' }} />
+                    </div>
+                    {s.name}
+                  </div>
+                </td>
                 <td style={{ padding: '0.75rem 0', textAlign: 'right' }}>
                   <button className="btn btn-outline" style={{ padding: '0.25rem', marginRight: '0.25rem', border: 'none' }} onClick={() => setEditingSeniority(s)}>
                     <Edit size={16} />

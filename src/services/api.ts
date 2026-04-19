@@ -129,6 +129,9 @@ export const api = {
     else { arr.push(seniority); }
     localStorage.setItem('@conecta_convista_seniorities', JSON.stringify(arr));
   },
+  updateSeniorities: (seniorities: import('../types').Seniority[]): void => {
+    localStorage.setItem('@conecta_convista_seniorities', JSON.stringify(seniorities));
+  },
   deleteSeniority: (id: string): void => {
     const arr = api.getSeniorities();
     const filtered = arr.filter((s) => s.id !== id);

@@ -276,6 +276,21 @@ const CandidateForm = () => {
               <input type="date" className="form-control" name="lastContactDate" value={formData.lastContactDate || ''} onChange={handleChange} />
             </div>
 
+            <div className="form-group">
+              <label className="form-label">Possui Restrição?</label>
+              <select className="form-control" name="hasRestriction" value={formData.hasRestriction ? 'sim' : 'nao'} onChange={(e) => setFormData({ ...formData, hasRestriction: e.target.value === 'sim', restrictionDetails: e.target.value === 'nao' ? '' : formData.restrictionDetails })}>
+                <option value="nao">Não</option>
+                <option value="sim">Sim</option>
+              </select>
+            </div>
+
+            {formData.hasRestriction && (
+              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                <label className="form-label">Qual Restrição?</label>
+                <input type="text" className="form-control" name="restrictionDetails" value={formData.restrictionDetails || ''} onChange={handleChange} placeholder="Especifique a restrição..." />
+              </div>
+            )}
+
             <div className="form-group" style={{ gridColumn: '1 / -1' }}>
               <label className="form-label">Principais Projetos</label>
               <textarea className="form-control" name="mainProjects" value={formData.mainProjects || ''} onChange={handleChange} rows={3} placeholder="Descreva os principais projetos de atuação..."></textarea>

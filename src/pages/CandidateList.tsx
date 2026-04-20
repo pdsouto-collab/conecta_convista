@@ -26,6 +26,8 @@ const CandidateList = () => {
   const [exConvistaFilter, setExConvistaFilter] = useState('');
   const [lastContactDateFilter, setLastContactDateFilter] = useState('');
   const [mainProjectsFilter, setMainProjectsFilter] = useState('');
+  const [hasRestrictionFilter, setHasRestrictionFilter] = useState('');
+  const [restrictionDetailsFilter, setRestrictionDetailsFilter] = useState('');
 
   const [technologies, setTechnologies] = useState<Technology[]>([]);
   const [availableStatuses, setAvailableStatuses] = useState<import('../types').CandidateStatusOption[]>([]);
@@ -68,6 +70,7 @@ const CandidateList = () => {
       'Nome', 'Email', 'Telefone', 'LinkedIn', 'Senioridade', 'Status',
       'Disponibilidade', 'Experiência em TI (Anos)', 'Experiência na Vaga (Anos)', 
       'Ex-Convista', 'Último Contato', 'Principais Projetos',
+      'Possui Restrição', 'Qual Restrição',
       'Pretensão PJ', 'Pretensão CLT', 'Disponível Em', 'Data Entrevista', 
       'Entrevistador 1', 'Entrevistador 2', 'Entrevistador 3',
       'Tecnologias e Metodologias', 'Notas Gerais da Entrevista', 
@@ -90,6 +93,7 @@ const CandidateList = () => {
         c.name, c.email, c.phone, c.linkedin, c.seniority, c.status,
         c.availability, c.experienceIT, c.experienceRole, 
         c.isExConvista ? 'Sim' : 'Não', c.lastContactDate, c.mainProjects,
+        c.hasRestriction ? 'Sim' : 'Não', c.restrictionDetails || '',
         c.salaryExpectationPJ, c.salaryExpectationCLT,
         c.availableFrom, c.interviewDate, c.interviewer1, c.interviewer2, c.interviewer3,
         techs, c.generalNotes, behavioral, technical
@@ -142,11 +146,14 @@ const CandidateList = () => {
     const matchExConvista = exConvistaFilter ? (exConvistaFilter === 'sim' ? c.isExConvista === true : c.isExConvista === false) : true;
     const matchLastContact = lastContactDateFilter ? c.lastContactDate === lastContactDateFilter : true;
     const matchMainProjects = mainProjectsFilter ? (c.mainProjects && c.mainProjects.toLowerCase().includes(mainProjectsFilter.toLowerCase())) : true;
+    
+    const matchHasRestriction = hasRestrictionFilter ? (hasRestrictionFilter === 'sim' ? c.hasRestriction === true : c.hasRestriction === false) : true;
+    const matchRestrictionDetails = restrictionDetailsFilter ? (c.restrictionDetails && c.restrictionDetails.toLowerCase().includes(restrictionDetailsFilter.toLowerCase())) : true;
 
-    return matchSearch && matchModule && matchStatus && matchAvailability && matchCvKeyword && matchExpIT && matchExpRole && matchSalaryPJ && matchSalaryCLT && matchExConvista && matchLastContact && matchMainProjects;
+    return matchSearch && matchModule && matchStatus && matchAvailability && matchCvKeyword && matchExpIT && matchExpRole && matchSalaryPJ && matchSalaryCLT && matchExConvista && matchLastContact && matchMainProjects && matchHasRestriction && matchRestrictionDetails;
   });
 
-  const hasActiveFilters = moduleFilter || statusFilter || availabilityFilter || cvKeywordFilter || minExperienceITFilter || minExperienceRoleFilter || maxSalaryFilterPJ || maxSalaryFilterCLT || exConvistaFilter || lastContactDateFilter || mainProjectsFilter;
+  const hasActiveFilters = moduleFilter || statusFilter || availabilityFilter || cvKeywordFilter || minExperienceITFilter || minExperienceRoleFilter || maxSalaryFilterPJ || maxSalaryFilterCLT || exConvistaFilter || lastContactDateFilter || mainProjectsFilter || hasRestrictionFilter || restrictionDetailsFilter;
 
   const clearFilters = () => {
     setModuleFilter('');
@@ -160,6 +167,8 @@ const CandidateList = () => {
     setExConvistaFilter('');
     setLastContactDateFilter('');
     setMainProjectsFilter('');
+    setHasRestrictionFilter('');
+    setRestrictionDetailsFilter('');
   };
 
   return (
@@ -308,6 +317,19 @@ const CandidateList = () => {
               <div className="form-group" style={{ marginBottom: 0, gridColumn: '1 / -1' }}>
                 <label className="form-label" style={{ fontSize: '0.75rem' }}>Palavra-chave em Principais Projetos</label>
                 <input type="text" className="form-control" placeholder="Ex: S/4HANA, roll-out..." value={mainProjectsFilter} onChange={(e) => setMainProjectsFilter(e.target.value)} />
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label" style={{ fontSize: '0.75rem' }}>Possui Restrição?</label>
+                <select className="form-control" value={hasRestrictionFilter} onChange={(e) => setHasRestrictionFilter(e.target.value)}>
+                  <option value="">Todos</option>
+                  <option value="sim">Sim</option>
+                  <option value="nao">Não</option>
+                </select>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label" style={{ fontSize: '0.75rem' }}>Palavra-chave em Qual Restrição?</label>
+                <input type="text" className="form-control" placeholder="Ex: Multa, Não viaja..." value={restrictionDetailsFilter} onChange={(e) => setRestrictionDetailsFilter(e.target.value)} />
               </div>
             </div>
           </div>

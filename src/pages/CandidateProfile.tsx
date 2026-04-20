@@ -229,6 +229,7 @@ const CandidateProfile = () => {
           <h4 style={{ marginBottom: '1rem' }}>Detalhes da Entrevista</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '2rem', fontSize: '0.875rem' }}>
             {candidate.isExConvista !== undefined && <div><strong>Ex-Convista:</strong> {candidate.isExConvista ? 'Sim' : 'Não'}</div>}
+            {candidate.hasRestriction !== undefined && <div><strong>Possui Restrição?</strong> {candidate.hasRestriction ? `Sim (${candidate.restrictionDetails || 'Não especificada'})` : 'Não'}</div>}
             {candidate.salaryExpectationPJ && <div><strong>Pretensão PJ:</strong> {candidate.salaryExpectationPJ}</div>}
             {candidate.salaryExpectationCLT && <div><strong>Pretensão CLT:</strong> {candidate.salaryExpectationCLT}</div>}
             {candidate.availableFrom && <div><strong>Disponível a partir de:</strong> {candidate.availableFrom.split('-').reverse().join('/')}</div>}
@@ -238,7 +239,7 @@ const CandidateProfile = () => {
             {candidate.interviewer1 && <div><strong>Entrevistador 1:</strong> {candidate.interviewer1}</div>}
             {candidate.interviewer2 && <div><strong>Entrevistador 2:</strong> {candidate.interviewer2}</div>}
             {candidate.interviewer3 && <div><strong>Entrevistador 3:</strong> {candidate.interviewer3}</div>}
-            {(!candidate.salaryExpectationPJ && !candidate.salaryExpectationCLT && !candidate.availableFrom && !candidate.interviewDate && !candidate.interviewer1 && (candidate.isExConvista === undefined) && !candidate.lastContactDate && !candidate.mainProjects) && (
+            {(!candidate.salaryExpectationPJ && !candidate.salaryExpectationCLT && !candidate.availableFrom && !candidate.interviewDate && !candidate.interviewer1 && (candidate.isExConvista === undefined) && (candidate.hasRestriction === undefined) && !candidate.lastContactDate && !candidate.mainProjects) && (
               <span style={{ color: 'var(--text-muted)' }}>Nenhuma informação preenchida.</span>
             )}
           </div>

@@ -48,6 +48,8 @@ export type Candidate = {
   isExConvista?: boolean;
   mainProjects?: string;
   lastContactDate?: string;
+  hasRestriction?: boolean;
+  restrictionDetails?: string;
 
   // Evaluation
   behavioralEvaluation: EvaluationMatrix[];

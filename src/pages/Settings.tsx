@@ -19,6 +19,7 @@ const Settings = () => {
 
   const [draggedSeniorityId, setDraggedSeniorityId] = useState<string | null>(null);
   const [draggedStatusId, setDraggedStatusId] = useState<string | null>(null);
+  const [draggedTechId, setDraggedTechId] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -46,6 +47,23 @@ const Settings = () => {
       api.deleteTechnology(id);
       loadData();
     }
+  };
+
+  const handleTechDragStart = (id: string) => setDraggedTechId(id);
+  
+  const handleTechDrop = (targetId: string) => {
+    if (!draggedTechId || draggedTechId === targetId) return;
+    
+    const sourceIndex = technologies.findIndex(t => t.id === draggedTechId);
+    const targetIndex = technologies.findIndex(t => t.id === targetId);
+    
+    const newTechs = [...technologies];
+    const [removed] = newTechs.splice(sourceIndex, 1);
+    newTechs.splice(targetIndex, 0, removed);
+    
+    setTechnologies(newTechs);
+    api.updateTechnologies(newTechs);
+    setDraggedTechId(null);
   };
 
   // Seniority Handlers
@@ -180,8 +198,27 @@ const Settings = () => {
             <tr><td colSpan={2} style={{ padding: '1rem 0', textAlign: 'center', color: 'var(--text-muted)' }}>Nenhuma tecnologia ou metodologia cadastrada.</td></tr>
           ) : (
             technologies.map(t => (
-              <tr key={t.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                <td style={{ padding: '0.75rem 0', fontWeight: 500 }}>{t.name}</td>
+              <tr 
+                key={t.id} 
+                style={{ 
+                  borderBottom: '1px solid var(--border)',
+                  backgroundColor: draggedTechId === t.id ? 'var(--bg-main)' : 'transparent',
+                  opacity: draggedTechId === t.id ? 0.5 : 1
+                }}
+                draggable
+                onDragStart={() => handleTechDragStart(t.id)}
+                onDragOver={handleDragOver}
+                onDrop={() => handleTechDrop(t.id)}
+                onDragEnd={() => setDraggedTechId(null)}
+              >
+                <td style={{ padding: '0.75rem 0', fontWeight: 500 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{ cursor: 'grab', display: 'flex', alignItems: 'center' }}>
+                      <GripVertical size={16} style={{ color: 'var(--text-muted)' }} />
+                    </div>
+                    {t.name}
+                  </div>
+                </td>
                 <td style={{ padding: '0.75rem 0', textAlign: 'right' }}>
                   <button className="btn btn-outline" style={{ padding: '0.25rem', marginRight: '0.25rem', border: 'none' }} onClick={() => setEditingTech(t)}>
                     <Edit size={16} />

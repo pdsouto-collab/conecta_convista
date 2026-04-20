@@ -104,6 +104,9 @@ export const api = {
     else { techs.push(tech); }
     localStorage.setItem('@conecta_convista_techs', JSON.stringify(techs));
   },
+  updateTechnologies: (techs: import('../types').Technology[]): void => {
+    localStorage.setItem('@conecta_convista_techs', JSON.stringify(techs));
+  },
   deleteTechnology: (id: string): void => {
     const techs = api.getTechnologies();
     const filtered = techs.filter((c) => c.id !== id);

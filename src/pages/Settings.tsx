@@ -434,7 +434,7 @@ const Settings = () => {
                   value={editingCriteria.technologyId || ''}
                   onChange={(e) => setEditingCriteria({ ...editingCriteria, technologyId: e.target.value })}
                 >
-                  <option value="">Nenhuma Tecnologia/Metodologia</option>
+                  <option value="">TODAS (Aplicável a todas as tecnologias/metodologias)</option>
                   {technologies.map(t => (
                     <option key={t.id} value={t.id}>{t.name}</option>
                   ))}

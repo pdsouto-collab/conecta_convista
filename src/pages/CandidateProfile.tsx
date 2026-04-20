@@ -95,10 +95,12 @@ const CandidateProfile = () => {
   const [candidate, setCandidate] = useState<Candidate | null>(null);
   const [libraryCriteria, setLibraryCriteria] = useState<import('../types').LibraryCriteria[]>([]);
   const [availableStatuses, setAvailableStatuses] = useState<import('../types').CandidateStatusOption[]>([]);
+  const [technologies, setTechnologies] = useState<import('../types').Technology[]>([]);
 
   useEffect(() => {
     setLibraryCriteria(api.getLibraryCriteria());
     setAvailableStatuses(api.getStatuses());
+    setTechnologies(api.getTechnologies());
     if (id) {
       const data = api.getCandidateById(id);
       if (data) setCandidate(data);
@@ -255,13 +257,25 @@ const CandidateProfile = () => {
             onChange={(id, field, value) => handleEvaluationChange('behavioralEvaluation', id, field, value)}
           />
 
-          <EvaluationSection 
-            title="2. Parte Técnica" 
-            evaluations={candidate.technicalEvaluation} 
-            availableCriteria={libraryCriteria.filter(c => c.type === 'Técnico')}
-            onAdd={() => handleAddEvaluation('technicalEvaluation')}
-            onChange={(id, field, value) => handleEvaluationChange('technicalEvaluation', id, field, value)}
-          />
+          {(() => {
+            const candidateTechIds = technologies
+              .filter(t => candidate.technologies.includes(t.name))
+              .map(t => t.id);
+
+            const techCriteria = libraryCriteria.filter(c => 
+              c.type === 'Técnico' && (!c.technologyId || candidateTechIds.includes(c.technologyId))
+            );
+
+            return (
+              <EvaluationSection 
+                title="2. Parte Técnica" 
+                evaluations={candidate.technicalEvaluation} 
+                availableCriteria={techCriteria}
+                onAdd={() => handleAddEvaluation('technicalEvaluation')}
+                onChange={(id, field, value) => handleEvaluationChange('technicalEvaluation', id, field, value)}
+              />
+            );
+          })()}
 
           <div style={{ marginTop: '2rem' }}>
             <h4 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Observações Gerais do Líder/Tech</h4>

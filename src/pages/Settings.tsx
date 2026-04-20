@@ -622,13 +622,73 @@ const Settings = () => {
         </div>
       </div>
 
-      <div className="tabs">
-        <button className={`tab ${activeTab === 'behavioral' ? 'active' : ''}`} onClick={() => setActiveTab('behavioral')}>Quesitos Comportamentais</button>
-        <button className={`tab ${activeTab === 'technical' ? 'active' : ''}`} onClick={() => setActiveTab('technical')}>Quesitos Técnicos</button>
-        <button className={`tab ${activeTab === 'techs' ? 'active' : ''}`} onClick={() => setActiveTab('techs')}>Cadastro de Tecnologias e Metodologias</button>
-        <button className={`tab ${activeTab === 'seniorities' ? 'active' : ''}`} onClick={() => setActiveTab('seniorities')}>Senioridade</button>
-        <button className={`tab ${activeTab === 'roles' ? 'active' : ''}`} onClick={() => setActiveTab('roles')}>Cargos</button>
-        <button className={`tab ${activeTab === 'statuses' ? 'active' : ''}`} onClick={() => setActiveTab('statuses')}>Status</button>
+      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', flexWrap: 'wrap' }}>
+        <button 
+          style={{ 
+            background: 'none', border: 'none', padding: '1rem 0', cursor: 'pointer',
+            borderBottom: activeTab === 'behavioral' ? '2px solid var(--primary)' : '2px solid transparent',
+            color: activeTab === 'behavioral' ? 'var(--primary)' : 'var(--text-muted)',
+            fontWeight: activeTab === 'behavioral' ? 600 : 500
+          }}
+          onClick={() => setActiveTab('behavioral')}
+        >
+          Quesitos Comportamentais
+        </button>
+        <button 
+          style={{ 
+            background: 'none', border: 'none', padding: '1rem 0', cursor: 'pointer',
+            borderBottom: activeTab === 'technical' ? '2px solid var(--primary)' : '2px solid transparent',
+            color: activeTab === 'technical' ? 'var(--primary)' : 'var(--text-muted)',
+            fontWeight: activeTab === 'technical' ? 600 : 500
+          }}
+          onClick={() => setActiveTab('technical')}
+        >
+          Quesitos Técnicos
+        </button>
+        <button 
+          style={{ 
+            background: 'none', border: 'none', padding: '1rem 0', cursor: 'pointer',
+            borderBottom: activeTab === 'techs' ? '2px solid var(--primary)' : '2px solid transparent',
+            color: activeTab === 'techs' ? 'var(--primary)' : 'var(--text-muted)',
+            fontWeight: activeTab === 'techs' ? 600 : 500
+          }}
+          onClick={() => setActiveTab('techs')}
+        >
+          Cadastro de Tecnologias e Metodologias
+        </button>
+        <button 
+          style={{ 
+            background: 'none', border: 'none', padding: '1rem 0', cursor: 'pointer',
+            borderBottom: activeTab === 'seniorities' ? '2px solid var(--primary)' : '2px solid transparent',
+            color: activeTab === 'seniorities' ? 'var(--primary)' : 'var(--text-muted)',
+            fontWeight: activeTab === 'seniorities' ? 600 : 500
+          }}
+          onClick={() => setActiveTab('seniorities')}
+        >
+          Senioridade
+        </button>
+        <button 
+          style={{ 
+            background: 'none', border: 'none', padding: '1rem 0', cursor: 'pointer',
+            borderBottom: activeTab === 'roles' ? '2px solid var(--primary)' : '2px solid transparent',
+            color: activeTab === 'roles' ? 'var(--primary)' : 'var(--text-muted)',
+            fontWeight: activeTab === 'roles' ? 600 : 500
+          }}
+          onClick={() => setActiveTab('roles')}
+        >
+          Cargos
+        </button>
+        <button 
+          style={{ 
+            background: 'none', border: 'none', padding: '1rem 0', cursor: 'pointer',
+            borderBottom: activeTab === 'statuses' ? '2px solid var(--primary)' : '2px solid transparent',
+            color: activeTab === 'statuses' ? 'var(--primary)' : 'var(--text-muted)',
+            fontWeight: activeTab === 'statuses' ? 600 : 500
+          }}
+          onClick={() => setActiveTab('statuses')}
+        >
+          Status
+        </button>
       </div>
       
       <div style={{ paddingTop: '1.5rem' }} className="animate-fade-in">

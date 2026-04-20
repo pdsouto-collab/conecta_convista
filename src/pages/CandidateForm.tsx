@@ -262,6 +262,24 @@ const CandidateForm = () => {
               <label className="form-label">Data da Entrevista</label>
               <input type="date" className="form-control" name="interviewDate" value={formData.interviewDate || ''} onChange={handleChange} />
             </div>
+
+            <div className="form-group">
+              <label className="form-label">Ex-Convista?</label>
+              <select className="form-control" name="isExConvista" value={formData.isExConvista ? 'sim' : 'nao'} onChange={(e) => setFormData({ ...formData, isExConvista: e.target.value === 'sim' })}>
+                <option value="nao">Não</option>
+                <option value="sim">Sim</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Último Contato</label>
+              <input type="date" className="form-control" name="lastContactDate" value={formData.lastContactDate || ''} onChange={handleChange} />
+            </div>
+
+            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+              <label className="form-label">Principais Projetos</label>
+              <textarea className="form-control" name="mainProjects" value={formData.mainProjects || ''} onChange={handleChange} rows={3} placeholder="Descreva os principais projetos de atuação..."></textarea>
+            </div>
           </div>
 
           <div className="grid-2" style={{ marginTop: '1rem' }}>

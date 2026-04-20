@@ -44,6 +44,10 @@ export type Candidate = {
   experienceIT?: string;
   experienceRole?: string;
   cvText?: string; // Text extracted from CV for searching
+  
+  isExConvista?: boolean;
+  mainProjects?: string;
+  lastContactDate?: string;
 
   // Evaluation
   behavioralEvaluation: EvaluationMatrix[];

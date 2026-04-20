@@ -64,6 +64,7 @@ const CandidateList = () => {
     const headers = [
       'Nome', 'Email', 'Telefone', 'LinkedIn', 'Senioridade', 'Status',
       'Disponibilidade', 'Experiência em TI (Anos)', 'Experiência na Vaga (Anos)', 
+      'Ex-Convista', 'Último Contato', 'Principais Projetos',
       'Pretensão PJ', 'Pretensão CLT', 'Disponível Em', 'Data Entrevista', 
       'Entrevistador 1', 'Entrevistador 2', 'Entrevistador 3',
       'Tecnologias e Metodologias', 'Notas Gerais da Entrevista', 
@@ -84,7 +85,9 @@ const CandidateList = () => {
 
       return [
         c.name, c.email, c.phone, c.linkedin, c.seniority, c.status,
-        c.availability, c.experienceIT, c.experienceRole, c.salaryExpectationPJ, c.salaryExpectationCLT,
+        c.availability, c.experienceIT, c.experienceRole, 
+        c.isExConvista ? 'Sim' : 'Não', c.lastContactDate, c.mainProjects,
+        c.salaryExpectationPJ, c.salaryExpectationCLT,
         c.availableFrom, c.interviewDate, c.interviewer1, c.interviewer2, c.interviewer3,
         techs, c.generalNotes, behavioral, technical
       ].map(escapeCSV).join(';');

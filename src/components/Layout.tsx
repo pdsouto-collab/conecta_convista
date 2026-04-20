@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users as UsersIcon, Settings, LogOut, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, Users as UsersIcon, Settings, LogOut, ShieldCheck, Activity } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import './Layout.css';
 
@@ -43,10 +43,16 @@ const Layout = () => {
             <span>Configurações</span>
           </NavLink>
           {user?.role === 'admin' && (
-            <NavLink to="/users" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-              <ShieldCheck size={20} />
-              <span>Usuários</span>
-            </NavLink>
+            <>
+              <NavLink to="/users" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <ShieldCheck size={20} />
+                <span>Usuários</span>
+              </NavLink>
+              <NavLink to="/logs" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <Activity size={20} />
+                <span>Logs do Sistema</span>
+              </NavLink>
+            </>
           )}
           <button className="nav-item logout" onClick={() => { logout(); navigate('/login'); }}>
             <LogOut size={20} />

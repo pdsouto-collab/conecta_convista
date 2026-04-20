@@ -3,6 +3,36 @@ import type { Candidate } from '../types';
 const STORAGE_KEY = '@conecta_convista_candidates';
 
 export const api = {
+  // --- LOGGING ---
+  getSystemLogs: (): import('../types').SystemLog[] => {
+    const data = localStorage.getItem('@conecta_convista_logs');
+    if (!data) return [];
+    try { return JSON.parse(data); } catch { return []; }
+  },
+  addLog: (action: 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'OTHER', entity: string, details: string): void => {
+    const logs = api.getSystemLogs();
+    const loggedUserStr = localStorage.getItem('@conecta_convista_loggedUser');
+    let userId = 'system';
+    let userName = 'Sistema';
+    if (loggedUserStr) {
+      try {
+        const u = JSON.parse(loggedUserStr);
+        userId = u.id;
+        userName = u.firstName + (u.lastName ? ' ' + u.lastName : '');
+      } catch (e) {}
+    }
+    logs.unshift({
+      id: Math.random().toString(36).substring(2, 9),
+      userId,
+      userName,
+      action,
+      entity,
+      details,
+      timestamp: new Date().toISOString()
+    });
+    localStorage.setItem('@conecta_convista_logs', JSON.stringify(logs));
+  },
+
   getCandidates: (): Candidate[] => {
     const data = localStorage.getItem(STORAGE_KEY);
     if (!data) return [];
@@ -24,8 +54,10 @@ export const api = {
     
     if (existingIndex >= 0) {
       candidates[existingIndex] = candidate;
+      api.addLog('UPDATE', 'Candidato', `Candidato atualizado: ${candidate.name}`);
     } else {
       candidates.push(candidate);
+      api.addLog('CREATE', 'Candidato', `Novo candidato cadastrado: ${candidate.name}`);
     }
     
     localStorage.setItem(STORAGE_KEY, JSON.stringify(candidates));
@@ -33,8 +65,12 @@ export const api = {
 
   deleteCandidate: (id: string): void => {
     const candidates = api.getCandidates();
+    const candidate = candidates.find(c => c.id === id);
     const filtered = candidates.filter((c) => c.id !== id);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+    if (candidate) {
+      api.addLog('DELETE', 'Candidato', `Candidato excluído: ${candidate.name}`);
+    }
   },
   
   seedMockData: () => {
@@ -149,8 +185,10 @@ export const api = {
     const existingIndex = roles.findIndex((r) => r.id === role.id);
     if (existingIndex >= 0) {
       roles[existingIndex] = role;
+      api.addLog('UPDATE', 'Configuração', `Cargo atualizado: ${role.name}`);
     } else {
       roles.push(role);
+      api.addLog('CREATE', 'Configuração', `Novo cargo cadastrado: ${role.name}`);
     }
     localStorage.setItem('@conecta_convista_roles', JSON.stringify(roles));
   },
@@ -159,8 +197,10 @@ export const api = {
   },
   deleteRole: (id: string): void => {
     const roles = api.getRoles();
+    const item = roles.find(r => r.id === id);
     const filtered = roles.filter((r) => r.id !== id);
     localStorage.setItem('@conecta_convista_roles', JSON.stringify(filtered));
+    if (item) api.addLog('DELETE', 'Configuração', `Cargo excluído: ${item.name}`);
   },
 
   // --- SENIORITIES ---
@@ -216,14 +256,23 @@ export const api = {
   saveUser: (user: import('../types').User): void => {
     const users = api.getUsers();
     const existingIndex = users.findIndex(u => u.id === user.id);
-    if (existingIndex >= 0) { users[existingIndex] = user; }
-    else { users.push(user); }
+    if (existingIndex >= 0) { 
+      users[existingIndex] = user; 
+      api.addLog('UPDATE', 'Usuário', `Usuário atualizado: ${user.firstName} ${user.lastName}`);
+    } else { 
+      users.push(user);
+      api.addLog('CREATE', 'Usuário', `Novo usuário cadastrado: ${user.firstName} ${user.lastName}`);
+    }
     localStorage.setItem('@conecta_convista_users', JSON.stringify(users));
   },
   deleteUser: (id: string): void => {
     const users = api.getUsers();
+    const user = users.find(u => u.id === id);
     const filtered = users.filter((u) => u.id !== id);
     localStorage.setItem('@conecta_convista_users', JSON.stringify(filtered));
+    if (user) {
+      api.addLog('DELETE', 'Usuário', `Usuário excluído: ${user.firstName} ${user.lastName}`);
+    }
   }
 };
 

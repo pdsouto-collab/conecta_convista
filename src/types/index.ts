@@ -90,3 +90,13 @@ export type User = {
   password?: string;
   active: boolean;
 };
+
+export type SystemLog = {
+  id: string;
+  userId: string;
+  userName: string;
+  action: 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'OTHER';
+  entity: string; // e.g. 'Candidato', 'Usuário', 'Configuração'
+  details: string;
+  timestamp: string;
+};

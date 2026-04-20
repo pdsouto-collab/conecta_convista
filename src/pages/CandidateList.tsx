@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../services/api';
 import type { Candidate, Technology } from '../types';
-import { Search, Filter, Plus, FileText, Edit, Trash2, X, ClipboardList, Upload } from 'lucide-react';
+import { Search, Filter, Plus, FileText, Edit, Trash2, X, ClipboardList, Upload, Download } from 'lucide-react';
 import { useRef } from 'react';
 
 const CandidateList = () => {
@@ -53,6 +53,51 @@ const CandidateList = () => {
       // Limpa o input para permitir selecionar o mesmo arquivo novamente, se necessário
       e.target.value = '';
     }
+  };
+
+  const exportToCSV = () => {
+    if (candidates.length === 0) {
+      alert('Nenhum candidato para exportar.');
+      return;
+    }
+
+    const headers = [
+      'Nome', 'Email', 'Telefone', 'LinkedIn', 'Senioridade', 'Status',
+      'Disponibilidade', 'Experiência em TI (Anos)', 'Experiência na Vaga (Anos)', 
+      'Pretensão PJ', 'Pretensão CLT', 'Disponível Em', 'Data Entrevista', 
+      'Entrevistador 1', 'Entrevistador 2', 'Entrevistador 3',
+      'Tecnologias e Metodologias', 'Notas Gerais da Entrevista', 
+      'Avaliação Comportamental', 'Avaliação Técnica'
+    ];
+
+    const escapeCSV = (value: any) => {
+      if (value === null || value === undefined) return '""';
+      const stringValue = String(value);
+      return `"${stringValue.replace(/"/g, '""').replace(/\n/g, ' ')}"`;
+    };
+
+    // Use filtered candidates to allow users to export specific segments
+    const rows = filteredCandidates.map(c => {
+      const techs = c.technologies ? c.technologies.join(', ') : '';
+      const behavioral = c.behavioralEvaluation?.map(e => `${e.criteria}: ${e.score} (${e.observation || 'Sem obs'})`).join(' | ') || '';
+      const technical = c.technicalEvaluation?.map(e => `${e.criteria}: ${e.score} (${e.observation || 'Sem obs'})`).join(' | ') || '';
+
+      return [
+        c.name, c.email, c.phone, c.linkedin, c.seniority, c.status,
+        c.availability, c.experienceIT, c.experienceRole, c.salaryExpectationPJ, c.salaryExpectationCLT,
+        c.availableFrom, c.interviewDate, c.interviewer1, c.interviewer2, c.interviewer3,
+        techs, c.generalNotes, behavioral, technical
+      ].map(escapeCSV).join(';');
+    });
+
+    const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + [headers.map(escapeCSV).join(';'), ...rows].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `candidatos_convista_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const filteredCandidates = candidates.filter((c) => {
@@ -112,6 +157,11 @@ const CandidateList = () => {
           <p style={{ color: 'var(--text-muted)' }}>Gerencie e filtre o banco de currículos.</p>
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
+          <button className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }} onClick={exportToCSV}>
+            <Download size={18} />
+            <span>Exportar CSV</span>
+          </button>
+          
           <input 
             type="file" 
             accept=".csv" 

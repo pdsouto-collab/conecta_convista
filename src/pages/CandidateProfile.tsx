@@ -281,7 +281,7 @@ const CandidateProfile = () => {
           })()}
 
           <div style={{ marginTop: '2rem' }}>
-            <h4 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Observações Gerais do Líder/Tech</h4>
+            <h4 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>Observações Gerais do Entrevistador Responsável</h4>
             <textarea 
               className="form-control" 
               rows={4} 

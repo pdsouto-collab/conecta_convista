@@ -23,6 +23,9 @@ const CandidateList = () => {
   const [minExperienceRoleFilter, setMinExperienceRoleFilter] = useState('');
   const [maxSalaryFilterPJ, setMaxSalaryFilterPJ] = useState('');
   const [maxSalaryFilterCLT, setMaxSalaryFilterCLT] = useState('');
+  const [exConvistaFilter, setExConvistaFilter] = useState('');
+  const [lastContactDateFilter, setLastContactDateFilter] = useState('');
+  const [mainProjectsFilter, setMainProjectsFilter] = useState('');
 
   const [technologies, setTechnologies] = useState<Technology[]>([]);
   const [availableStatuses, setAvailableStatuses] = useState<import('../types').CandidateStatusOption[]>([]);
@@ -135,11 +138,15 @@ const CandidateList = () => {
     const matchSalaryCLT = maxSalaryFilterCLT ? (
       c.salaryExpectationCLT ? parseSalary(c.salaryExpectationCLT) <= parseFloat(maxSalaryFilterCLT) : false
     ) : true;
+    
+    const matchExConvista = exConvistaFilter ? (exConvistaFilter === 'sim' ? c.isExConvista === true : c.isExConvista === false) : true;
+    const matchLastContact = lastContactDateFilter ? c.lastContactDate === lastContactDateFilter : true;
+    const matchMainProjects = mainProjectsFilter ? (c.mainProjects && c.mainProjects.toLowerCase().includes(mainProjectsFilter.toLowerCase())) : true;
 
-    return matchSearch && matchModule && matchStatus && matchAvailability && matchCvKeyword && matchExpIT && matchExpRole && matchSalaryPJ && matchSalaryCLT;
+    return matchSearch && matchModule && matchStatus && matchAvailability && matchCvKeyword && matchExpIT && matchExpRole && matchSalaryPJ && matchSalaryCLT && matchExConvista && matchLastContact && matchMainProjects;
   });
 
-  const hasActiveFilters = moduleFilter || statusFilter || availabilityFilter || cvKeywordFilter || minExperienceITFilter || minExperienceRoleFilter || maxSalaryFilterPJ || maxSalaryFilterCLT;
+  const hasActiveFilters = moduleFilter || statusFilter || availabilityFilter || cvKeywordFilter || minExperienceITFilter || minExperienceRoleFilter || maxSalaryFilterPJ || maxSalaryFilterCLT || exConvistaFilter || lastContactDateFilter || mainProjectsFilter;
 
   const clearFilters = () => {
     setModuleFilter('');
@@ -150,6 +157,9 @@ const CandidateList = () => {
     setMinExperienceRoleFilter('');
     setMaxSalaryFilterPJ('');
     setMaxSalaryFilterCLT('');
+    setExConvistaFilter('');
+    setLastContactDateFilter('');
+    setMainProjectsFilter('');
   };
 
   return (
@@ -277,10 +287,28 @@ const CandidateList = () => {
               </div>
 
               <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label" style={{ fontSize: '0.75rem' }}>Pretensão CLT Máxima (R$)</label>
-                <input type="number" className="form-control" min="0" step="100" placeholder="Max: 10000" value={maxSalaryFilterCLT} onChange={(e) => setMaxSalaryFilterCLT(e.target.value)} />
+                <label className="form-label" style={{ fontSize: '0.75rem' }}>Pretensão Máxima CLT (BRL)</label>
+                <input type="number" className="form-control" placeholder="R$ 0,00" value={maxSalaryFilterCLT} onChange={(e) => setMaxSalaryFilterCLT(e.target.value)} />
               </div>
 
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label" style={{ fontSize: '0.75rem' }}>Ex-Convista</label>
+                <select className="form-control" value={exConvistaFilter} onChange={(e) => setExConvistaFilter(e.target.value)}>
+                  <option value="">Todos</option>
+                  <option value="sim">Sim</option>
+                  <option value="nao">Não</option>
+                </select>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label" style={{ fontSize: '0.75rem' }}>Último Contato</label>
+                <input type="date" className="form-control" value={lastContactDateFilter} onChange={(e) => setLastContactDateFilter(e.target.value)} />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 0, gridColumn: '1 / -1' }}>
+                <label className="form-label" style={{ fontSize: '0.75rem' }}>Palavra-chave em Principais Projetos</label>
+                <input type="text" className="form-control" placeholder="Ex: S/4HANA, roll-out..." value={mainProjectsFilter} onChange={(e) => setMainProjectsFilter(e.target.value)} />
+              </div>
             </div>
           </div>
         )}

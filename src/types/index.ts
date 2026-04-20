@@ -11,6 +11,11 @@ export type Seniority = {
   name: string;
 };
 
+export type RoleOption = {
+  id: string;
+  name: string;
+};
+
 export type EvaluationMatrix = {
   id: string;
   criteria: string;
@@ -41,6 +46,7 @@ export type Candidate = {
   interviewer3?: string;
 
   // Professional
+  role?: string;
   experienceIT?: string;
   experienceRole?: string;
   cvText?: string; // Text extracted from CV for searching

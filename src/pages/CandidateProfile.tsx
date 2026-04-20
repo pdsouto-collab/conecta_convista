@@ -189,9 +189,18 @@ const CandidateProfile = () => {
             <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'var(--primary-light)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 600 }}>
               {candidate.name.charAt(0)}
             </div>
-            <div>
-              <h2 style={{ fontSize: '1.5rem', margin: 0 }}>{candidate.name}</h2>
-              <p style={{ color: 'var(--text-muted)' }}>{candidate.seniority}</p>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <h2 style={{ fontSize: '2rem', marginBottom: '0.25rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                {candidate.name}
+                <span className={`status-badge status-${candidate.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                  {candidate.status}
+                </span>
+              </h2>
+              <div style={{ display: 'flex', gap: '1rem', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+                <span>{candidate.role ? `${candidate.role} • ` : ''}{candidate.seniority}</span>
+                <span>•</span>
+                <span>{candidate.availability}</span>
+              </div>
             </div>
           </div>
 

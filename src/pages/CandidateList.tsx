@@ -18,6 +18,7 @@ const CandidateList = () => {
   // Advanced filters
   const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
   const [availabilityFilter, setAvailabilityFilter] = useState('');
+  const [roleFilter, setRoleFilter] = useState('');
   const [cvKeywordFilter, setCvKeywordFilter] = useState('');
   const [minExperienceITFilter, setMinExperienceITFilter] = useState('');
   const [minExperienceRoleFilter, setMinExperienceRoleFilter] = useState('');
@@ -31,11 +32,13 @@ const CandidateList = () => {
 
   const [technologies, setTechnologies] = useState<Technology[]>([]);
   const [availableStatuses, setAvailableStatuses] = useState<import('../types').CandidateStatusOption[]>([]);
+  const [availableRoles, setAvailableRoles] = useState<import('../types').RoleOption[]>([]);
 
   useEffect(() => {
     setCandidates(api.getCandidates());
     setTechnologies(api.getTechnologies());
     setAvailableStatuses(api.getStatuses());
+    setAvailableRoles(api.getRoles());
   }, []);
 
   useEffect(() => {
@@ -67,7 +70,7 @@ const CandidateList = () => {
     }
 
     const headers = [
-      'Nome', 'Email', 'Telefone', 'LinkedIn', 'Senioridade', 'Status',
+      'Nome', 'Email', 'Telefone', 'LinkedIn', 'Cargo', 'Senioridade', 'Status',
       'Disponibilidade', 'Experiência em TI (Anos)', 'Experiência na Vaga (Anos)', 
       'Ex-Convista', 'Último Contato', 'Principais Projetos',
       'Possui Restrição', 'Qual Restrição',
@@ -90,7 +93,7 @@ const CandidateList = () => {
       const technical = c.technicalEvaluation?.map(e => `${e.criteria}: ${e.score} (${e.observation || 'Sem obs'})`).join(' | ') || '';
 
       return [
-        c.name, c.email, c.phone, c.linkedin, c.seniority, c.status,
+        c.name, c.email, c.phone, c.linkedin, c.role || '', c.seniority, c.status,
         c.availability, c.experienceIT, c.experienceRole, 
         c.isExConvista ? 'Sim' : 'Não', c.lastContactDate, c.mainProjects,
         c.hasRestriction ? 'Sim' : 'Não', c.restrictionDetails || '',
@@ -117,6 +120,7 @@ const CandidateList = () => {
     const matchStatus = statusFilter ? c.status === statusFilter : true;
     
     const matchAvailability = availabilityFilter ? c.availability === availabilityFilter : true;
+    const matchRole = roleFilter ? c.role === roleFilter : true;
     
     // Keyword search in CV
     const matchCvKeyword = cvKeywordFilter ? (
@@ -150,12 +154,13 @@ const CandidateList = () => {
     const matchHasRestriction = hasRestrictionFilter ? (hasRestrictionFilter === 'sim' ? c.hasRestriction === true : c.hasRestriction === false) : true;
     const matchRestrictionDetails = restrictionDetailsFilter ? (c.restrictionDetails && c.restrictionDetails.toLowerCase().includes(restrictionDetailsFilter.toLowerCase())) : true;
 
-    return matchSearch && matchModule && matchStatus && matchAvailability && matchCvKeyword && matchExpIT && matchExpRole && matchSalaryPJ && matchSalaryCLT && matchExConvista && matchLastContact && matchMainProjects && matchHasRestriction && matchRestrictionDetails;
+    return matchSearch && matchRole && matchModule && matchStatus && matchAvailability && matchCvKeyword && matchExpIT && matchExpRole && matchSalaryPJ && matchSalaryCLT && matchExConvista && matchLastContact && matchMainProjects && matchHasRestriction && matchRestrictionDetails;
   });
 
-  const hasActiveFilters = moduleFilter || statusFilter || availabilityFilter || cvKeywordFilter || minExperienceITFilter || minExperienceRoleFilter || maxSalaryFilterPJ || maxSalaryFilterCLT || exConvistaFilter || lastContactDateFilter || mainProjectsFilter || hasRestrictionFilter || restrictionDetailsFilter;
+  const hasActiveFilters = roleFilter || moduleFilter || statusFilter || availabilityFilter || cvKeywordFilter || minExperienceITFilter || minExperienceRoleFilter || maxSalaryFilterPJ || maxSalaryFilterCLT || exConvistaFilter || lastContactDateFilter || mainProjectsFilter || hasRestrictionFilter || restrictionDetailsFilter;
 
   const clearFilters = () => {
+    setRoleFilter('');
     setModuleFilter('');
     setStatusFilter('');
     setAvailabilityFilter('');
@@ -259,6 +264,14 @@ const CandidateList = () => {
                 <select className="form-control" value={moduleFilter} onChange={(e) => setModuleFilter(e.target.value)}>
                   <option value="">Todas as Opções</option>
                   {technologies.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
+                </select>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label" style={{ fontSize: '0.75rem' }}>Cargo</label>
+                <select className="form-control" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
+                  <option value="">Todos os Cargos</option>
+                  {availableRoles.map(r => <option key={r.id} value={r.name}>{r.name}</option>)}
                 </select>
               </div>
 

@@ -5,19 +5,22 @@ import type { Technology, LibraryCriteria, Seniority, CandidateStatusOption } fr
 import { Settings as SettingsIcon, Trash2, Plus, Edit, Save, X, GripVertical } from 'lucide-react';
 
 const Settings = () => {
-  const [activeTab, setActiveTab] = useState<'behavioral' | 'technical' | 'techs' | 'seniorities' | 'statuses'>('behavioral');
+  const [activeTab, setActiveTab] = useState<'behavioral' | 'technical' | 'techs' | 'seniorities' | 'roles' | 'statuses'>('behavioral');
   
   const [technologies, setTechnologies] = useState<Technology[]>([]);
   const [seniorities, setSeniorities] = useState<Seniority[]>([]);
+  const [roles, setRoles] = useState<import('../types').RoleOption[]>([]);
   const [statuses, setStatuses] = useState<CandidateStatusOption[]>([]);
   const [criteria, setCriteria] = useState<LibraryCriteria[]>([]);
 
   const [editingTech, setEditingTech] = useState<Technology | null>(null);
   const [editingSeniority, setEditingSeniority] = useState<Seniority | null>(null);
+  const [editingRole, setEditingRole] = useState<import('../types').RoleOption | null>(null);
   const [editingStatus, setEditingStatus] = useState<CandidateStatusOption | null>(null);
   const [editingCriteria, setEditingCriteria] = useState<LibraryCriteria | null>(null);
 
   const [draggedSeniorityId, setDraggedSeniorityId] = useState<string | null>(null);
+  const [draggedRoleId, setDraggedRoleId] = useState<string | null>(null);
   const [draggedStatusId, setDraggedStatusId] = useState<string | null>(null);
   const [draggedTechId, setDraggedTechId] = useState<string | null>(null);
 
@@ -28,6 +31,7 @@ const Settings = () => {
   const loadData = () => {
     setTechnologies(api.getTechnologies());
     setSeniorities(api.getSeniorities());
+    setRoles(api.getRoles());
     setStatuses(api.getStatuses());
     setCriteria(api.getLibraryCriteria());
   };
@@ -100,6 +104,40 @@ const Settings = () => {
     setSeniorities(newSeniorities);
     api.updateSeniorities(newSeniorities);
     setDraggedSeniorityId(null);
+  };
+
+  // Role Handlers
+  const saveRole = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingRole && editingRole.name.trim()) {
+      api.saveRole(editingRole);
+      setEditingRole(null);
+      loadData();
+    }
+  };
+
+  const deleteRole = (id: string) => {
+    if (confirm('Tem certeza que deseja excluir este cargo?')) {
+      api.deleteRole(id);
+      loadData();
+    }
+  };
+
+  const handleRoleDragStart = (id: string) => setDraggedRoleId(id);
+  
+  const handleRoleDrop = (targetId: string) => {
+    if (!draggedRoleId || draggedRoleId === targetId) return;
+    
+    const sourceIndex = roles.findIndex(r => r.id === draggedRoleId);
+    const targetIndex = roles.findIndex(r => r.id === targetId);
+    
+    const newRoles = [...roles];
+    const [removed] = newRoles.splice(sourceIndex, 1);
+    newRoles.splice(targetIndex, 0, removed);
+    
+    setRoles(newRoles);
+    api.updateRoles(newRoles);
+    setDraggedRoleId(null);
   };
 
   // Status Handlers
@@ -397,6 +435,87 @@ const Settings = () => {
     </div>
   );
 
+  const renderRoleTab = () => (
+    <div className="card" style={{ padding: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', alignItems: 'center' }}>
+        <h3 style={{ color: 'var(--primary)', margin: 0 }}>Cadastro de Cargo</h3>
+        <button 
+          className="btn btn-primary" 
+          onClick={() => setEditingRole({ id: uuidv4(), name: '' })}
+          style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
+        >
+          <Plus size={16} /> Novo Cargo
+        </button>
+      </div>
+
+      {editingRole && (
+        <form onSubmit={saveRole} style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'flex-end', padding: '1rem', backgroundColor: 'var(--bg-main)', borderRadius: 'var(--radius-md)' }}>
+          <div className="form-group" style={{ marginBottom: 0, flex: 1 }}>
+            <label className="form-label">Nome do Cargo</label>
+            <input 
+              autoFocus
+              className="form-control" 
+              value={editingRole.name} 
+              onChange={(e) => setEditingRole({ ...editingRole, name: e.target.value })} 
+              required
+            />
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button className="btn btn-primary" type="submit" style={{ padding: '0.5rem' }}><Save size={18} /></button>
+            <button className="btn btn-outline" type="button" style={{ padding: '0.5rem' }} onClick={() => setEditingRole(null)}><X size={18} /></button>
+          </div>
+        </form>
+      )}
+
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr style={{ borderBottom: '2px solid var(--border)', textAlign: 'left' }}>
+            <th style={{ padding: '0.75rem 0', fontWeight: 600, color: 'var(--text-main)' }}>Nome</th>
+            <th style={{ padding: '0.75rem 0', width: '100px', textAlign: 'right' }}>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {roles.length === 0 ? (
+            <tr><td colSpan={2} style={{ padding: '1rem 0', textAlign: 'center', color: 'var(--text-muted)' }}>Nenhum cargo cadastrado.</td></tr>
+          ) : (
+            roles.map(r => (
+              <tr 
+                key={r.id} 
+                style={{ 
+                  borderBottom: '1px solid var(--border)',
+                  backgroundColor: draggedRoleId === r.id ? 'var(--bg-main)' : 'transparent',
+                  opacity: draggedRoleId === r.id ? 0.5 : 1
+                }}
+                draggable
+                onDragStart={() => handleRoleDragStart(r.id)}
+                onDragOver={handleDragOver}
+                onDrop={() => handleRoleDrop(r.id)}
+                onDragEnd={() => setDraggedRoleId(null)}
+              >
+                <td style={{ padding: '0.75rem 0', fontWeight: 500 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{ cursor: 'grab', display: 'flex', alignItems: 'center' }}>
+                      <GripVertical size={16} style={{ color: 'var(--text-muted)' }} />
+                    </div>
+                    {r.name}
+                  </div>
+                </td>
+                <td style={{ padding: '0.75rem 0', textAlign: 'right' }}>
+                  <button className="btn btn-outline" style={{ padding: '0.25rem', marginRight: '0.25rem', border: 'none' }} onClick={() => setEditingRole(r)}>
+                    <Edit size={16} />
+                  </button>
+                  <button className="btn btn-outline" style={{ padding: '0.25rem', border: 'none', color: 'var(--danger)' }} onClick={() => deleteRole(r.id)}>
+                    <Trash2 size={16} />
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+
   const renderCriteriaTab = (type: 'Comportamental' | 'Técnico') => {
     const list = criteria.filter(c => c.type === type);
 
@@ -503,71 +622,23 @@ const Settings = () => {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)' }}>
-        <button 
-          style={{ 
-            background: 'none', border: 'none', padding: '1rem 0', cursor: 'pointer',
-            borderBottom: activeTab === 'behavioral' ? '2px solid var(--primary)' : '2px solid transparent',
-            color: activeTab === 'behavioral' ? 'var(--primary)' : 'var(--text-muted)',
-            fontWeight: activeTab === 'behavioral' ? 600 : 500
-          }}
-          onClick={() => setActiveTab('behavioral')}
-        >
-          Quesitos Comportamentais
-        </button>
-        <button 
-          style={{ 
-            background: 'none', border: 'none', padding: '1rem 0', cursor: 'pointer',
-            borderBottom: activeTab === 'technical' ? '2px solid var(--primary)' : '2px solid transparent',
-            color: activeTab === 'technical' ? 'var(--primary)' : 'var(--text-muted)',
-            fontWeight: activeTab === 'technical' ? 600 : 500
-          }}
-          onClick={() => setActiveTab('technical')}
-        >
-          Quesitos Técnicos
-        </button>
-        <button 
-          style={{ 
-            background: 'none', border: 'none', padding: '1rem 0', cursor: 'pointer',
-            borderBottom: activeTab === 'techs' ? '2px solid var(--primary)' : '2px solid transparent',
-            color: activeTab === 'techs' ? 'var(--primary)' : 'var(--text-muted)',
-            fontWeight: activeTab === 'techs' ? 600 : 500
-          }}
-          onClick={() => setActiveTab('techs')}
-        >
-          Cadastro de Tecnologias e Metodologias
-        </button>
-          <button 
-            style={{ 
-              background: 'none', border: 'none', padding: '1rem 0', cursor: 'pointer',
-              borderBottom: activeTab === 'seniorities' ? '2px solid var(--primary)' : '2px solid transparent',
-              color: activeTab === 'seniorities' ? 'var(--primary)' : 'var(--text-muted)',
-              fontWeight: activeTab === 'seniorities' ? 600 : 500
-            }}
-            onClick={() => setActiveTab('seniorities')}
-          >
-            Senioridade
-          </button>
-          <button 
-            style={{ 
-              background: 'none', border: 'none', padding: '1rem 0', cursor: 'pointer',
-              borderBottom: activeTab === 'statuses' ? '2px solid var(--primary)' : '2px solid transparent',
-              color: activeTab === 'statuses' ? 'var(--primary)' : 'var(--text-muted)',
-              fontWeight: activeTab === 'statuses' ? 600 : 500
-            }}
-            onClick={() => setActiveTab('statuses')}
-          >
-            Status
-          </button>
-        </div>
-
-        <div className="animate-fade-in">
-          {activeTab === 'techs' && renderTechTab()}
-          {activeTab === 'behavioral' && renderCriteriaTab('Comportamental')}
-          {activeTab === 'technical' && renderCriteriaTab('Técnico')}
-          {activeTab === 'seniorities' && renderSeniorityTab()}
-          {activeTab === 'statuses' && renderStatusTab()}
-        </div>
+      <div className="tabs">
+        <button className={`tab ${activeTab === 'behavioral' ? 'active' : ''}`} onClick={() => setActiveTab('behavioral')}>Quesitos Comportamentais</button>
+        <button className={`tab ${activeTab === 'technical' ? 'active' : ''}`} onClick={() => setActiveTab('technical')}>Quesitos Técnicos</button>
+        <button className={`tab ${activeTab === 'techs' ? 'active' : ''}`} onClick={() => setActiveTab('techs')}>Cadastro de Tecnologias e Metodologias</button>
+        <button className={`tab ${activeTab === 'seniorities' ? 'active' : ''}`} onClick={() => setActiveTab('seniorities')}>Senioridade</button>
+        <button className={`tab ${activeTab === 'roles' ? 'active' : ''}`} onClick={() => setActiveTab('roles')}>Cargos</button>
+        <button className={`tab ${activeTab === 'statuses' ? 'active' : ''}`} onClick={() => setActiveTab('statuses')}>Status</button>
+      </div>
+      
+      <div style={{ paddingTop: '1.5rem' }} className="animate-fade-in">
+        {activeTab === 'behavioral' && renderCriteriaTab('Comportamental')}
+        {activeTab === 'technical' && renderCriteriaTab('Técnico')}
+        {activeTab === 'techs' && renderTechTab()}
+        {activeTab === 'seniorities' && renderSeniorityTab()}
+        {activeTab === 'roles' && renderRoleTab()}
+        {activeTab === 'statuses' && renderStatusTab()}
+      </div>
     </div>
   );
 };

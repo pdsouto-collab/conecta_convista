@@ -42,6 +42,7 @@ const CandidateForm = () => {
   const [fileName, setFileName] = useState('');
   const [availableTechs, setAvailableTechs] = useState<Technology[]>([]);
   const [availableSeniorities, setAvailableSeniorities] = useState<Seniority[]>([]);
+  const [availableRoles, setAvailableRoles] = useState<import('../types').RoleOption[]>([]);
 
   useEffect(() => {
     const statuses = api.getStatuses();
@@ -51,6 +52,7 @@ const CandidateForm = () => {
 
     setAvailableTechs(api.getTechnologies());
     setAvailableSeniorities(api.getSeniorities());
+    setAvailableRoles(api.getRoles());
     if (isEditing && id) {
       const candidate = api.getCandidateById(id);
       if (candidate) {
@@ -178,6 +180,15 @@ const CandidateForm = () => {
           <h3 style={{ marginBottom: '1.5rem', color: 'var(--primary)' }}>Perfil Profissional</h3>
           
           <div className="grid-2">
+            <div className="form-group">
+              <label className="form-label">Cargo *</label>
+              <select required className="form-control" name="role" value={formData.role || ''} onChange={handleChange}>
+                <option value="">Selecione...</option>
+                {availableRoles.map(r => (
+                  <option key={r.id} value={r.name}>{r.name}</option>
+                ))}
+              </select>
+            </div>
             <div className="form-group">
               <label className="form-label">Senioridade *</label>
               <select required className="form-control" name="seniority" value={formData.seniority} onChange={handleChange}>

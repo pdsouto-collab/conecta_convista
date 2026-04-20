@@ -63,6 +63,12 @@ export const api = {
       api.saveUser({ id: 'u3', firstName: 'Tech', lastName: 'Lead', email: 'entrevistador@convista.com', position: 'Líder Técnico', role: 'interviewer', password: 'tech', active: true });
     }
 
+    const existingRoles = api.getRoles();
+    if (existingRoles.length === 0) {
+      const defaultRoles = ['Consultor FI', 'Consultor ABAP', 'Arquiteto S/4HANA', 'Gerente de Projetos'];
+      defaultRoles.forEach(r => api.saveRole({ id: r.toLowerCase().replace(/\s+/g, '-'), name: r }));
+    }
+
     const existing = api.getCandidates();
     if (existing.length > 0) return;
     
@@ -130,6 +136,31 @@ export const api = {
     const arr = api.getLibraryCriteria();
     const filtered = arr.filter((c) => c.id !== id);
     localStorage.setItem('@conecta_convista_criteria', JSON.stringify(filtered));
+  },
+
+  // --- ROLES ---
+  getRoles: (): import('../types').RoleOption[] => {
+    const data = localStorage.getItem('@conecta_convista_roles');
+    if (!data) return [];
+    try { return JSON.parse(data); } catch { return []; }
+  },
+  saveRole: (role: import('../types').RoleOption): void => {
+    const roles = api.getRoles();
+    const existingIndex = roles.findIndex((r) => r.id === role.id);
+    if (existingIndex >= 0) {
+      roles[existingIndex] = role;
+    } else {
+      roles.push(role);
+    }
+    localStorage.setItem('@conecta_convista_roles', JSON.stringify(roles));
+  },
+  updateRoles: (roles: import('../types').RoleOption[]): void => {
+    localStorage.setItem('@conecta_convista_roles', JSON.stringify(roles));
+  },
+  deleteRole: (id: string): void => {
+    const roles = api.getRoles();
+    const filtered = roles.filter((r) => r.id !== id);
+    localStorage.setItem('@conecta_convista_roles', JSON.stringify(filtered));
   },
 
   // --- SENIORITIES ---

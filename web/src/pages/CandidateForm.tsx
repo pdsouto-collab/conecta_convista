@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { api } from '../services/api';
 import type { Candidate, Technology, Seniority } from '../types';
 import { Save, ArrowLeft, Upload, Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 
 const CandidateForm = () => {
@@ -204,17 +205,22 @@ const CandidateForm = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const candidateToSave: Candidate = {
-      ...(formData as Candidate),
-      id: isEditing ? formData.id! : uuidv4(),
-      createdAt: formData.createdAt || new Date().toISOString(),
-    };
+    try {
+      const candidateToSave: Candidate = {
+        ...(formData as Candidate),
+        id: isEditing ? formData.id! : uuidv4(),
+        createdAt: formData.createdAt || new Date().toISOString(),
+      };
 
-    api.saveCandidate(candidateToSave);
-    navigate('/candidates');
+      await api.saveCandidate(candidateToSave);
+      toast.success('Candidato salvo com sucesso!');
+      navigate('/candidates');
+    } catch (e) {
+      toast.error('Não foi possível salvar o candidato.');
+    }
   };
 
   return (

@@ -4,6 +4,7 @@ import { api } from '../services/api';
 import type { Candidate, EvaluationMatrix } from '../types';
 import { ArrowLeft, User, Phone, Mail, Briefcase, FileText, CheckCircle, Plus } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
+import toast from 'react-hot-toast';
 
 const EvaluationSection = ({ 
   title, 
@@ -132,10 +133,14 @@ const CandidateProfile = () => {
     });
   };
 
-  const saveCandidate = () => {
+  const saveCandidate = async () => {
     if (candidate) {
-      api.saveCandidate(candidate);
-      alert('Avaliação salva com sucesso!');
+      try {
+        await (api as any).saveCandidate(candidate);
+        toast.success('Avaliação salva com sucesso!');
+      } catch (e: any) {
+        toast.error('Não foi possível salvar a avaliação.');
+      }
     }
   };
 

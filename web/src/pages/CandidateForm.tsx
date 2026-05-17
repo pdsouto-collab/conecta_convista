@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import { api } from '../services/api';
 import type { Candidate, Technology, Seniority } from '../types';
-import { Save, ArrowLeft, Upload } from 'lucide-react';
+import { Save, ArrowLeft, Upload, Trash2 } from 'lucide-react';
 
 
 const CandidateForm = () => {
@@ -132,6 +132,18 @@ const CandidateForm = () => {
         setFormData(prev => ({ ...prev, cvFile: reader.result as string }));
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveFile = () => {
+    if (confirm('Tem certeza que deseja remover o anexo atual?')) {
+      setFileName('');
+      setFormData(prev => ({
+        ...prev,
+        cvFile: '',
+        cvFileName: '',
+        cvText: ''
+      }));
     }
   };
 
@@ -525,6 +537,9 @@ const CandidateForm = () => {
                     Abrir Documento
                   </button>
                 )}
+                <button type="button" className="btn btn-outline" style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={handleRemoveFile}>
+                  <Trash2 size={14} style={{ marginRight: '0.25rem' }} /> Remover
+                </button>
               </div>
             )}
             

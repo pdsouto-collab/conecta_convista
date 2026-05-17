@@ -47,7 +47,7 @@ export const api = {
         authFetch(`${API_BASE}/settings/users`).then(r => r.json()),
         authFetch(`${API_BASE}/settings/logs`).then(r => r.json())
       ]);
-      cache.candidates = Array.isArray(candidates) ? candidates : [];
+      cache.candidates = candidates && candidates.data ? candidates.data : Array.isArray(candidates) ? candidates : [];
       cache.techs = Array.isArray(techs) ? techs : [];
       cache.criteria = Array.isArray(criteria) ? criteria : [];
       cache.roles = Array.isArray(roles) ? roles : [];
@@ -89,7 +89,20 @@ export const api = {
   },
 
   // --- CANDIDATES ---
+  
+  fetchCandidatesPaginated: async (params: any = {}) => {
+    const searchParams = new URLSearchParams();
+    Object.keys(params).forEach(key => {
+      if (params[key] !== undefined && params[key] !== '') {
+        searchParams.append(key, String(params[key]));
+      }
+    });
+    const res = await authFetch(`${API_BASE}/candidates?${searchParams.toString()}`);
+    if (!res.ok) throw new Error('Failed to fetch paginated candidates');
+    return res.json();
+  },
   getCandidates: (): Candidate[] => cache.candidates,
+
 
   getCandidateById: (id: string): Candidate | undefined => {
     return cache.candidates.find((c) => c.id === id);

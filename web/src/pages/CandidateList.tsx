@@ -1,56 +1,74 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../services/api';
-import type { Candidate, Technology } from '../types';
-import { Search, Filter, Plus, FileText, Edit, Trash2, X, ClipboardList, Upload, Download } from 'lucide-react';
-import { useRef } from 'react';
+import type { Candidate } from '../types';
+import { Search, Filter, Plus, FileText, Edit, Trash2, X, ClipboardList, Upload, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const CandidateList = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 50;
+  
+  const [loading, setLoading] = useState(false);
+
   const [searchTerm, setSearchTerm] = useState('');
-  const [moduleFilter, setModuleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState(location.state?.statusFilter || '');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Advanced filters
   const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
-  const [availabilityFilter, setAvailabilityFilter] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [cvKeywordFilter, setCvKeywordFilter] = useState('');
-  const [minExperienceITFilter, setMinExperienceITFilter] = useState('');
-  const [minExperienceRoleFilter, setMinExperienceRoleFilter] = useState('');
-  const [maxSalaryFilterPJ, setMaxSalaryFilterPJ] = useState('');
-  const [maxSalaryFilterCLT, setMaxSalaryFilterCLT] = useState('');
   const [exConvistaFilter, setExConvistaFilter] = useState('');
-  const [lastContactDateFilter, setLastContactDateFilter] = useState('');
-  const [mainProjectsFilter, setMainProjectsFilter] = useState('');
-  const [hasRestrictionFilter, setHasRestrictionFilter] = useState('');
-  const [restrictionDetailsFilter, setRestrictionDetailsFilter] = useState('');
 
-  const [technologies, setTechnologies] = useState<Technology[]>([]);
-  const [availableStatuses, setAvailableStatuses] = useState<import('../types').CandidateStatusOption[]>([]);
+    const [availableStatuses, setAvailableStatuses] = useState<import('../types').CandidateStatusOption[]>([]);
   const [availableRoles, setAvailableRoles] = useState<import('../types').RoleOption[]>([]);
 
   useEffect(() => {
-    setCandidates(api.getCandidates());
-    setTechnologies(api.getTechnologies());
     setAvailableStatuses(api.getStatuses());
     setAvailableRoles(api.getRoles());
   }, []);
 
-  useEffect(() => {
-    if (location.state && typeof location.state.statusFilter !== 'undefined') {
-      setStatusFilter(location.state.statusFilter);
+  const fetchCandidates = async () => {
+    setLoading(true);
+    try {
+      const res = await (api as any).fetchCandidatesPaginated({
+        page: currentPage,
+        limit,
+        search: searchTerm,
+        status: statusFilter,
+        role: roleFilter,
+        cvKeyword: cvKeywordFilter,
+        isExConvista: exConvistaFilter === 'sim' ? true : exConvistaFilter === 'nao' ? false : undefined
+      });
+      setCandidates(res.data);
+      setTotalCount(res.total);
+      setTotalPages(res.totalPages);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
     }
-  }, [location.state]);
+  };
+
+  useEffect(() => {
+    // Reset to page 1 whenever a filter changes
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, roleFilter, cvKeywordFilter, exConvistaFilter]);
+
+  useEffect(() => {
+    fetchCandidates();
+  }, [currentPage, searchTerm, statusFilter, roleFilter, cvKeywordFilter, exConvistaFilter]);
 
   const handleDelete = (id: string, name: string) => {
     if (window.confirm(`Tem certeza que deseja excluir o candidato ${name}?`)) {
       api.deleteCandidate(id);
-      setCandidates(api.getCandidates());
+      setTimeout(fetchCandidates, 500); // refresh after delete
     }
   };
 
@@ -58,122 +76,80 @@ const CandidateList = () => {
     const file = e.target.files?.[0];
     if (file) {
       alert(`Arquivo ${file.name} selecionado! A integração com o layout CSV será implementada em breve.`);
-      // Limpa o input para permitir selecionar o mesmo arquivo novamente, se necessário
       e.target.value = '';
     }
   };
 
-  const exportToCSV = () => {
-    if (candidates.length === 0) {
-      alert('Nenhum candidato para exportar.');
-      return;
+  const exportToCSV = async () => {
+    try {
+      const res = await (api as any).fetchCandidatesPaginated({
+        limit: 10000,
+        search: searchTerm,
+        status: statusFilter,
+        role: roleFilter,
+        cvKeyword: cvKeywordFilter,
+        isExConvista: exConvistaFilter === 'sim' ? true : exConvistaFilter === 'nao' ? false : undefined
+      });
+      const fullList = res.data as Candidate[];
+
+      if (fullList.length === 0) {
+        alert('Nenhum candidato para exportar.');
+        return;
+      }
+
+      const headers = [
+        'Nome', 'Email', 'Telefone', 'LinkedIn', 'Cargo', 'Senioridade', 'Status',
+        'Disponibilidade', 'Experiência em TI (Anos)', 'Experiência na Vaga (Anos)', 
+        'Ex-Convista', 'Último Contato', 'Principais Projetos',
+        'Possui Restrição', 'Qual Restrição',
+        'Pretensão PJ', 'Pretensão CLT', 'Disponível Em', 'Data Entrevista', 
+        'Entrevistador 1', 'Entrevistador 2', 'Entrevistador 3',
+        'Tecnologias e Metodologias', 'Notas Gerais da Entrevista', 
+        'Avaliação Comportamental', 'Avaliação Técnica'
+      ];
+
+      const escapeCSV = (value: any) => {
+        if (value === null || value === undefined) return '""';
+        const stringValue = String(value);
+        return `"${stringValue.replace(/"/g, '""').replace(/\n/g, ' ')}"`;
+      };
+
+      const rows = fullList.map(c => {
+        const techs = c.technologies ? c.technologies.join(', ') : '';
+        const behavioral = c.behavioralEvaluation?.map(e => `${e.criteria}: ${e.score} (${e.observation || 'Sem obs'})`).join(' | ') || '';
+        const technical = c.technicalEvaluation?.map(e => `${e.criteria}: ${e.score} (${e.observation || 'Sem obs'})`).join(' | ') || '';
+
+        return [
+          c.name, c.email, c.phone, c.linkedin, c.role || '', c.seniority, c.status,
+          c.availability, c.experienceIT, c.experienceRole, 
+          c.isExConvista ? 'Sim' : 'Não', c.lastContactDate, c.mainProjects,
+          c.hasRestriction ? 'Sim' : 'Não', c.restrictionDetails || '',
+          c.salaryExpectationPJ, c.salaryExpectationCLT,
+          c.availableFrom, c.interviewDate, c.interviewer1, c.interviewer2, c.interviewer3,
+          techs, c.generalNotes, behavioral, technical
+        ].map(escapeCSV).join(';');
+      });
+
+      const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + [headers.map(escapeCSV).join(';'), ...rows].join('\n');
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `candidatos_convista_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (e) {
+      alert("Erro ao exportar dados.");
     }
-
-    const headers = [
-      'Nome', 'Email', 'Telefone', 'LinkedIn', 'Cargo', 'Senioridade', 'Status',
-      'Disponibilidade', 'Experiência em TI (Anos)', 'Experiência na Vaga (Anos)', 
-      'Ex-Convista', 'Último Contato', 'Principais Projetos',
-      'Possui Restrição', 'Qual Restrição',
-      'Pretensão PJ', 'Pretensão CLT', 'Disponível Em', 'Data Entrevista', 
-      'Entrevistador 1', 'Entrevistador 2', 'Entrevistador 3',
-      'Tecnologias e Metodologias', 'Notas Gerais da Entrevista', 
-      'Avaliação Comportamental', 'Avaliação Técnica'
-    ];
-
-    const escapeCSV = (value: any) => {
-      if (value === null || value === undefined) return '""';
-      const stringValue = String(value);
-      return `"${stringValue.replace(/"/g, '""').replace(/\n/g, ' ')}"`;
-    };
-
-    // Use filtered candidates to allow users to export specific segments
-    const rows = filteredCandidates.map(c => {
-      const techs = c.technologies ? c.technologies.join(', ') : '';
-      const behavioral = c.behavioralEvaluation?.map(e => `${e.criteria}: ${e.score} (${e.observation || 'Sem obs'})`).join(' | ') || '';
-      const technical = c.technicalEvaluation?.map(e => `${e.criteria}: ${e.score} (${e.observation || 'Sem obs'})`).join(' | ') || '';
-
-      return [
-        c.name, c.email, c.phone, c.linkedin, c.role || '', c.seniority, c.status,
-        c.availability, c.experienceIT, c.experienceRole, 
-        c.isExConvista ? 'Sim' : 'Não', c.lastContactDate, c.mainProjects,
-        c.hasRestriction ? 'Sim' : 'Não', c.restrictionDetails || '',
-        c.salaryExpectationPJ, c.salaryExpectationCLT,
-        c.availableFrom, c.interviewDate, c.interviewer1, c.interviewer2, c.interviewer3,
-        techs, c.generalNotes, behavioral, technical
-      ].map(escapeCSV).join(';');
-    });
-
-    const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + [headers.map(escapeCSV).join(';'), ...rows].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `candidatos_convista_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
-  const filteredCandidates = candidates.filter((c) => {
-    const matchSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                        c.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchModule = moduleFilter ? c.technologies.some(m => m.toLowerCase().includes(moduleFilter.toLowerCase())) : true;
-    const matchStatus = statusFilter ? c.status === statusFilter : true;
-    
-    const matchAvailability = availabilityFilter ? c.availability === availabilityFilter : true;
-    const matchRole = roleFilter ? c.role === roleFilter : true;
-    
-    // Keyword search in CV
-    const matchCvKeyword = cvKeywordFilter ? (
-      (c.cvText && c.cvText.toLowerCase().includes(cvKeywordFilter.toLowerCase())) ||
-      (c.cvFileName && c.cvFileName.toLowerCase().includes(cvKeywordFilter.toLowerCase())) ||
-      (c.generalNotes && c.generalNotes.toLowerCase().includes(cvKeywordFilter.toLowerCase()))
-    ) : true;
-    
-    // Experience
-    const matchExpIT = minExperienceITFilter ? parseFloat(c.experienceIT || '0') >= parseFloat(minExperienceITFilter) : true;
-    const matchExpRole = minExperienceRoleFilter ? parseFloat(c.experienceRole || '0') >= parseFloat(minExperienceRoleFilter) : true;
-    
-    // Salary
-    const parseSalary = (val?: string) => {
-      if (!val) return 0;
-      return parseFloat(val.replace(/\D/g, '')) / 100;
-    };
-    
-    const matchSalaryPJ = maxSalaryFilterPJ ? (
-      c.salaryExpectationPJ ? parseSalary(c.salaryExpectationPJ) <= parseFloat(maxSalaryFilterPJ) : false
-    ) : true;
-    
-    const matchSalaryCLT = maxSalaryFilterCLT ? (
-      c.salaryExpectationCLT ? parseSalary(c.salaryExpectationCLT) <= parseFloat(maxSalaryFilterCLT) : false
-    ) : true;
-    
-    const matchExConvista = exConvistaFilter ? (exConvistaFilter === 'sim' ? c.isExConvista === true : c.isExConvista === false) : true;
-    const matchLastContact = lastContactDateFilter ? c.lastContactDate === lastContactDateFilter : true;
-    const matchMainProjects = mainProjectsFilter ? (c.mainProjects && c.mainProjects.toLowerCase().includes(mainProjectsFilter.toLowerCase())) : true;
-    
-    const matchHasRestriction = hasRestrictionFilter ? (hasRestrictionFilter === 'sim' ? c.hasRestriction === true : c.hasRestriction === false) : true;
-    const matchRestrictionDetails = restrictionDetailsFilter ? (c.restrictionDetails && c.restrictionDetails.toLowerCase().includes(restrictionDetailsFilter.toLowerCase())) : true;
-
-    return matchSearch && matchRole && matchModule && matchStatus && matchAvailability && matchCvKeyword && matchExpIT && matchExpRole && matchSalaryPJ && matchSalaryCLT && matchExConvista && matchLastContact && matchMainProjects && matchHasRestriction && matchRestrictionDetails;
-  });
-
-  const hasActiveFilters = roleFilter || moduleFilter || statusFilter || availabilityFilter || cvKeywordFilter || minExperienceITFilter || minExperienceRoleFilter || maxSalaryFilterPJ || maxSalaryFilterCLT || exConvistaFilter || lastContactDateFilter || mainProjectsFilter || hasRestrictionFilter || restrictionDetailsFilter;
+  const hasActiveFilters = roleFilter || statusFilter || cvKeywordFilter || exConvistaFilter;
 
   const clearFilters = () => {
     setRoleFilter('');
-    setModuleFilter('');
     setStatusFilter('');
-    setAvailabilityFilter('');
     setCvKeywordFilter('');
-    setMinExperienceITFilter('');
-    setMinExperienceRoleFilter('');
-    setMaxSalaryFilterPJ('');
-    setMaxSalaryFilterCLT('');
     setExConvistaFilter('');
-    setLastContactDateFilter('');
-    setMainProjectsFilter('');
-    setHasRestrictionFilter('');
-    setRestrictionDetailsFilter('');
   };
 
   return (
@@ -181,7 +157,7 @@ const CandidateList = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div>
           <h1 style={{ fontSize: '1.875rem', marginBottom: '0.5rem' }}>Candidatos</h1>
-          <p style={{ color: 'var(--text-muted)' }}>Gerencie e filtre o banco de currículos.</p>
+          <p style={{ color: 'var(--text-muted)' }}>Gerencie e filtre o banco de currículos. ${totalCount > 0 ? `(${totalCount} registros encontrados)` : ''}</p>
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <button className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }} onClick={exportToCSV}>
@@ -243,11 +219,11 @@ const CandidateList = () => {
 
         {advancedFiltersOpen && (
           <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }} className="animate-fade-in">
-            <h4 style={{ marginBottom: '1rem', color: 'var(--text-main)' }}>Opções de Filtragem</h4>
+            <h4 style={{ marginBottom: '1rem', color: 'var(--text-main)' }}>Opções de Filtragem (Servidor)</h4>
             <div className="grid-2" style={{ gap: '1rem' }}>
               
               <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label" style={{ fontSize: '0.75rem' }}>Palavra-chave no Currículo / Observações</label>
+                <label className="form-label" style={{ fontSize: '0.75rem' }}>Palavra-chave no Currículo</label>
                 <div style={{ position: 'relative' }}>
                   <FileText size={16} style={{ position: 'absolute', top: '0.7rem', left: '0.75rem', color: 'var(--text-light)' }} />
                   <input 
@@ -257,14 +233,6 @@ const CandidateList = () => {
                     style={{ paddingLeft: '2.2rem' }}
                   />
                 </div>
-              </div>
-
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label" style={{ fontSize: '0.75rem' }}>Tecnologia / Módulo Principal</label>
-                <select className="form-control" value={moduleFilter} onChange={(e) => setModuleFilter(e.target.value)}>
-                  <option value="">Todas as Opções</option>
-                  {technologies.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
-                </select>
               </div>
 
               <div className="form-group" style={{ marginBottom: 0 }}>
@@ -284,36 +252,6 @@ const CandidateList = () => {
               </div>
 
               <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label" style={{ fontSize: '0.75rem' }}>Disponibilidade</label>
-                <select className="form-control" value={availabilityFilter} onChange={(e) => setAvailabilityFilter(e.target.value)}>
-                  <option value="">Qualquer Disponibilidade</option>
-                  <option value="Presencial">Presencial</option>
-                  <option value="Híbrido">Híbrido</option>
-                  <option value="Remoto">Remoto</option>
-                </select>
-              </div>
-
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label" style={{ fontSize: '0.75rem' }}>Experiência Mínima em TI (Anos)</label>
-                <input type="number" className="form-control" min="0" step="0.5" placeholder="Ex: 5" value={minExperienceITFilter} onChange={(e) => setMinExperienceITFilter(e.target.value)} />
-              </div>
-
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label" style={{ fontSize: '0.75rem' }}>Experiência Mínima na Vaga (Anos)</label>
-                <input type="number" className="form-control" min="0" step="0.5" placeholder="Ex: 3" value={minExperienceRoleFilter} onChange={(e) => setMinExperienceRoleFilter(e.target.value)} />
-              </div>
-
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label" style={{ fontSize: '0.75rem' }}>Pretensão PJ Máxima (R$)</label>
-                <input type="number" className="form-control" min="0" step="100" placeholder="Max: 15000" value={maxSalaryFilterPJ} onChange={(e) => setMaxSalaryFilterPJ(e.target.value)} />
-              </div>
-
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label" style={{ fontSize: '0.75rem' }}>Pretensão Máxima CLT (BRL)</label>
-                <input type="number" className="form-control" placeholder="R$ 0,00" value={maxSalaryFilterCLT} onChange={(e) => setMaxSalaryFilterCLT(e.target.value)} />
-              </div>
-
-              <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label" style={{ fontSize: '0.75rem' }}>Ex-Convista</label>
                 <select className="form-control" value={exConvistaFilter} onChange={(e) => setExConvistaFilter(e.target.value)}>
                   <option value="">Todos</option>
@@ -322,101 +260,109 @@ const CandidateList = () => {
                 </select>
               </div>
 
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label" style={{ fontSize: '0.75rem' }}>Último Contato</label>
-                <input type="date" className="form-control" value={lastContactDateFilter} onChange={(e) => setLastContactDateFilter(e.target.value)} />
-              </div>
-
-              <div className="form-group" style={{ marginBottom: 0, gridColumn: '1 / -1' }}>
-                <label className="form-label" style={{ fontSize: '0.75rem' }}>Palavra-chave em Principais Projetos</label>
-                <input type="text" className="form-control" placeholder="Ex: S/4HANA, roll-out..." value={mainProjectsFilter} onChange={(e) => setMainProjectsFilter(e.target.value)} />
-              </div>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label" style={{ fontSize: '0.75rem' }}>Possui Restrição?</label>
-                <select className="form-control" value={hasRestrictionFilter} onChange={(e) => setHasRestrictionFilter(e.target.value)}>
-                  <option value="">Todos</option>
-                  <option value="sim">Sim</option>
-                  <option value="nao">Não</option>
-                </select>
-              </div>
-
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label className="form-label" style={{ fontSize: '0.75rem' }}>Palavra-chave em Qual Restrição?</label>
-                <input type="text" className="form-control" placeholder="Ex: Multa, Não viaja..." value={restrictionDetailsFilter} onChange={(e) => setRestrictionDetailsFilter(e.target.value)} />
-              </div>
             </div>
           </div>
         )}
       </div>
 
       <div className="card">
-        {filteredCandidates.length > 0 ? (
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'var(--bg-main)' }}>
-                <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-main)' }}>Candidato</th>
-                <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-main)' }}>Senioridade</th>
-                <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-main)' }}>Tecnologias e Metodologias</th>
-                <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-main)' }}>Status</th>
-                <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-main)', textAlign: 'right' }}>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredCandidates.map((candidate) => (
-                <tr key={candidate.id} style={{ borderBottom: '1px solid var(--border)', transition: 'background-color 0.2s' }}>
-                  <td style={{ padding: '1rem 1.5rem' }}>
-                    <div style={{ fontWeight: 600, color: 'var(--primary)' }}>{candidate.name}</div>
-                    <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>{candidate.email}</div>
-                  </td>
-                  <td style={{ padding: '1rem 1.5rem' }}>
-                    <span style={{ border: '1px solid var(--border)', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem' }}>
-                      {candidate.seniority}
-                    </span>
-                  </td>
-                  <td style={{ padding: '1rem 1.5rem' }}>
-                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                      {candidate.technologies.map(m => (
-                        <span key={m} style={{ backgroundColor: 'var(--bg-main)', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', color: 'var(--text-main)' }}>
-                          {m}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td style={{ padding: '1rem 1.5rem' }}>
-                    <span style={{ fontWeight: 500, fontSize: '0.875rem' }}>{candidate.status}</span>
-                  </td>
-                  <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
-                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                      <button 
-                        className="btn btn-outline" 
-                        style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
-                        onClick={() => navigate(`/candidates/${candidate.id}/edit`)}
-                        title="Editar Informações"
-                      >
-                        <Edit size={14} /> Informações Gerais
-                      </button>
-                      <button 
-                        className="btn btn-outline" 
-                        style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
-                        onClick={() => navigate(`/candidates/${candidate.id}`)}
-                        title="Avaliação da Entrevista"
-                      >
-                        <ClipboardList size={14} /> Informações de Entrevista
-                      </button>
-                      <button 
-                        className="btn btn-outline" 
-                        style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', color: 'var(--danger)', borderColor: 'transparent' }}
-                        onClick={() => handleDelete(candidate.id, candidate.name)}
-                        title="Excluir"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </td>
+        {loading ? (
+          <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+            Carregando candidatos...
+          </div>
+        ) : candidates.length > 0 ? (
+          <>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'var(--bg-main)' }}>
+                  <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-main)' }}>Candidato</th>
+                  <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-main)' }}>Senioridade</th>
+                  <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-main)' }}>Tecnologias e Metodologias</th>
+                  <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-main)' }}>Status</th>
+                  <th style={{ padding: '1rem 1.5rem', fontWeight: 600, color: 'var(--text-main)', textAlign: 'right' }}>Ações</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {candidates.map((candidate) => (
+                  <tr key={candidate.id} style={{ borderBottom: '1px solid var(--border)', transition: 'background-color 0.2s' }}>
+                    <td style={{ padding: '1rem 1.5rem' }}>
+                      <div style={{ fontWeight: 600, color: 'var(--primary)' }}>{candidate.name}</div>
+                      <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>{candidate.email}</div>
+                    </td>
+                    <td style={{ padding: '1rem 1.5rem' }}>
+                      <span style={{ border: '1px solid var(--border)', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem' }}>
+                        {candidate.seniority}
+                      </span>
+                    </td>
+                    <td style={{ padding: '1rem 1.5rem' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        {candidate.technologies?.map(m => (
+                          <span key={m} style={{ backgroundColor: 'var(--bg-main)', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', color: 'var(--text-main)' }}>
+                            {m}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td style={{ padding: '1rem 1.5rem' }}>
+                      <span style={{ fontWeight: 500, fontSize: '0.875rem' }}>{candidate.status}</span>
+                    </td>
+                    <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                        <button 
+                          className="btn btn-outline" 
+                          style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
+                          onClick={() => navigate(`/candidates/${candidate.id}/edit`)}
+                          title="Editar Informações"
+                        >
+                          <Edit size={14} /> 
+                        </button>
+                        <button 
+                          className="btn btn-outline" 
+                          style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
+                          onClick={() => navigate(`/candidates/${candidate.id}`)}
+                          title="Avaliação da Entrevista"
+                        >
+                          <ClipboardList size={14} /> 
+                        </button>
+                        <button 
+                          className="btn btn-outline" 
+                          style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', color: 'var(--danger)', borderColor: 'transparent' }}
+                          onClick={() => handleDelete(candidate.id, candidate.name)}
+                          title="Excluir"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            
+            <div style={{ padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+                Mostrando página {currentPage} de {totalPages || 1}
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button 
+                  className="btn btn-outline" 
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', padding: '0.5rem 0.75rem' }}
+                >
+                  <ChevronLeft size={16} /> Anterior
+                </button>
+                <button 
+                  className="btn btn-outline" 
+                  disabled={currentPage === totalPages || totalPages === 0}
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', padding: '0.5rem 0.75rem' }}
+                >
+                  Próxima <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          </>
         ) : (
           <div style={{ padding: '3rem', textAlign: 'center' }}>
             <FileText size={48} style={{ color: 'var(--border)', margin: '0 auto 1rem auto' }} />

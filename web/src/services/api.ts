@@ -65,10 +65,16 @@ export const api = {
   // --- LOGGING ---
   getSystemLogs: (): SystemLog[] => cache.logs,
   addLog: (action: 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'OTHER', entity: string, details: string): void => {
-    // Para simplificar no in-memory, o usuário logado ainda poderia ser pego de um cookie ou cache,
-    // mas não estamos usando localstorage mais. Então usaremos fixo ou simulado.
-    const userId = 'system';
-    const userName = 'Sistema';
+    let userId = 'system';
+    let userName = 'Sistema';
+    try {
+      const userStr = localStorage.getItem('convista_user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        userId = user.id || 'system';
+        userName = user.name ? `${user.name} ${user.surname || ''}`.trim() : 'Sistema';
+      }
+    } catch (e) {}
 
     const newLog: SystemLog = {
       id: Math.random().toString(36).substring(2, 9),

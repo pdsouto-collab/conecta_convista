@@ -244,18 +244,67 @@ app.post('/api/extract-cv', async (req, res) => {
 // --- CANDIDATES ---
 app.get('/api/candidates', async (req, res) => {
   try {
-    const candidates = await prisma.candidate.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: { evaluations: true }
-    });
-    
-    const formatted = candidates.map((c: any) => {
-      const behavioralEvaluation = c.evaluations.filter((e: any) => e.type === 'BEHAVIORAL');
-      const technicalEvaluation = c.evaluations.filter((e: any) => e.type === 'TECHNICAL');
-      return { ...c, behavioralEvaluation, technicalEvaluation };
-    });
-    
-    res.status(200).json(formatted);
+    const { page, limit, search, status, role, cvKeyword, isExConvista } = req.query;
+
+    let whereClause: any = {};
+    if (search) {
+      whereClause.OR = [
+        { name: { contains: String(search), mode: 'insensitive' } },
+        { email: { contains: String(search), mode: 'insensitive' } },
+        { technologies: { has: String(search) } }
+      ];
+    }
+    if (status) {
+      whereClause.status = String(status);
+    }
+    if (role) {
+      whereClause.role = String(role);
+    }
+    if (cvKeyword) {
+      whereClause.cvText = { contains: String(cvKeyword), mode: 'insensitive' };
+    }
+    if (isExConvista !== undefined) {
+      whereClause.isExConvista = isExConvista === 'true';
+    }
+
+    if (page) {
+      const pageNum = parseInt(String(page)) || 1;
+      const limitNum = parseInt(String(limit)) || 50;
+      const skip = (pageNum - 1) * limitNum;
+
+      const [total, candidates] = await prisma.$transaction([
+        prisma.candidate.count({ where: whereClause }),
+        prisma.candidate.findMany({
+          where: whereClause,
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take: limitNum,
+          include: { evaluations: true }
+        })
+      ]);
+
+      const formatted = candidates.map((c: any) => {
+        const behavioralEvaluation = c.evaluations.filter((e: any) => e.type === 'BEHAVIORAL');
+        const technicalEvaluation = c.evaluations.filter((e: any) => e.type === 'TECHNICAL');
+        return { ...c, behavioralEvaluation, technicalEvaluation };
+      });
+
+      const totalPages = Math.ceil(total / limitNum);
+      return res.status(200).json({ data: formatted, total, totalPages });
+    } else {
+      const candidates = await prisma.candidate.findMany({
+        orderBy: { createdAt: 'desc' },
+        include: { evaluations: true }
+      });
+      
+      const formatted = candidates.map((c: any) => {
+        const behavioralEvaluation = c.evaluations.filter((e: any) => e.type === 'BEHAVIORAL');
+        const technicalEvaluation = c.evaluations.filter((e: any) => e.type === 'TECHNICAL');
+        return { ...c, behavioralEvaluation, technicalEvaluation };
+      });
+      
+      res.status(200).json(formatted);
+    }
   } catch (e) {
     res.status(500).json({ error: 'Failed to fetch' });
   }

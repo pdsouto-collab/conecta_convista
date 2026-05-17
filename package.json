@@ -178,6 +178,7 @@
     "path-to-regexp-updated": "^6.3.0",
     "path-type": "^4.0.0",
     "pathe": "^2.0.3",
+    "pdfkit": "^0.18.0",
     "perfect-debounce": "^2.1.0",
     "picocolors": "^1.1.1",
     "picomatch": "^4.0.4",

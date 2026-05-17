@@ -3,6 +3,18 @@ import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import { put } from '@vercel/blob';
 import dotenv from 'dotenv';
+import { z } from 'zod';
+
+const candidateSchema = z.object({
+  name: z.string().min(2, "Nome é obrigatório e deve ter no mínimo 2 caracteres"),
+  email: z.string().email("Formato de e-mail inválido"),
+  phone: z.string().optional().nullable(),
+  role: z.string().optional().nullable(),
+  seniority: z.string().optional().nullable(),
+  status: z.string().optional().nullable(),
+  availability: z.string().optional().nullable()
+}).passthrough();
+
 
 dotenv.config();
 
@@ -269,7 +281,17 @@ app.get('/api/candidates/:id', async (req, res) => {
 
 app.post('/api/candidates', async (req, res) => {
   try {
-    const data = req.body;
+            const data = req.body;
+    try {
+      candidateSchema.parse(data);
+    } catch (err: any) {
+      return res.status(400).json({ error: 'Erro de validação', details: err.errors });
+    }
+    try {
+      candidateSchema.parse(data);
+    } catch (err: any) {
+      return res.status(400).json({ error: 'Erro de validação', details: err.errors });
+    }
     const { behavioralEvaluation, technicalEvaluation, evaluations, id, ...rest } = data;
     
     const newEvals: any[] = [];
@@ -320,7 +342,12 @@ app.post('/api/candidates', async (req, res) => {
 app.put('/api/candidates/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const data = req.body;
+        const data = req.body;
+    try {
+      candidateSchema.parse(data);
+    } catch (err: any) {
+      return res.status(400).json({ error: 'Erro de validação', details: err.errors });
+    }
     const { behavioralEvaluation, technicalEvaluation, evaluations, id: _, createdAt, ...rest } = data;
     
     // Process CV Upload to Vercel Blob if it's a Base64 string

@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import type { Candidate, Technology, LibraryCriteria, RoleOption, Seniority, CandidateStatusOption, User, SystemLog } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
@@ -108,7 +109,7 @@ export const api = {
     return cache.candidates.find((c) => c.id === id);
   },
 
-  saveCandidate: (candidate: Candidate): void => {
+  saveCandidate: async (candidate: Candidate): Promise<void> => {
     const existingIndex = cache.candidates.findIndex((c) => c.id === candidate.id);
     let method = 'POST';
     let url = `${API_BASE}/candidates`;
@@ -133,12 +134,12 @@ export const api = {
       if (!res.ok) {
         const err = await res.text();
         console.error("Erro na API:", err);
-        alert("Ocorreu um erro ao salvar no servidor. Possivelmente o arquivo é grande demais (limite Vercel de 4.5MB). Detalhes: " + res.status);
+        if (res.status === 413) { toast.error("O arquivo é grande demais (limite Vercel de 4.5MB)."); }
       }
     })
     .catch((e) => {
       console.error("Falha de rede ao salvar:", e);
-      alert("Falha de rede ao salvar o candidato no servidor.");
+      // toast already shown in authFetch
     });
   },
 

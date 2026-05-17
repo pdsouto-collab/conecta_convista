@@ -1,5 +1,6 @@
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { Toaster } from 'react-hot-toast';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import CandidateList from './pages/CandidateList';
@@ -45,6 +46,7 @@ function AppRoutes() {
 function App() {
   return (
     <AuthProvider>
+      <Toaster position="top-right" />
       <AppRoutes />
     </AuthProvider>
   );

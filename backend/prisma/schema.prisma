@@ -82,23 +82,27 @@ model User {
 }
 
 model Technology {
-  id   String @id @default(uuid())
-  name String @unique
+  id    String @id @default(uuid())
+  name  String @unique
+  order Int    @default(0)
 }
 
 model Seniority {
-  id   String @id @default(uuid())
-  name String @unique
+  id    String @id @default(uuid())
+  name  String @unique
+  order Int    @default(0)
 }
 
 model RoleOption {
-  id   String @id @default(uuid())
-  name String @unique
+  id    String @id @default(uuid())
+  name  String @unique
+  order Int    @default(0)
 }
 
 model CandidateStatusOption {
-  id   String @id @default(uuid())
-  name String @unique
+  id    String @id @default(uuid())
+  name  String @unique
+  order Int    @default(0)
 }
 
 model SystemLog {

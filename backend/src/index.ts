@@ -60,7 +60,10 @@ app.all('/api/settings/:entity', async (req, res) => {
 
   if (req.method === 'GET') {
     try {
-      const items = await model.findMany();
+      const orderBy = ['technology', 'seniority', 'roleOption', 'candidateStatusOption'].includes(modelKey) 
+        ? { order: 'asc' } 
+        : undefined;
+      const items = await model.findMany({ orderBy });
       res.status(200).json(items);
     } catch (e) {
       res.status(500).json({ error: 'Fetch failed' });
@@ -89,6 +92,41 @@ app.all('/api/settings/:entity', async (req, res) => {
     }
   } else {
     res.status(405).json({ error: `Method ${req.method} Not Allowed` });
+  }
+});
+
+// --- BULK REORDER SETTINGS ---
+app.post('/api/settings/:entity/reorder', async (req, res) => {
+  const { entity } = req.params;
+  const items = req.body as { id: string, order: number }[];
+  
+  const modelNameMap: Record<string, keyof typeof prisma> = {
+    technologies: 'technology',
+    seniorities: 'seniority',
+    roles: 'roleOption',
+    statuses: 'candidateStatusOption'
+  };
+
+  const modelKey = modelNameMap[entity];
+  if (!modelKey || !(prisma as any)[modelKey]) {
+    return res.status(400).json({ error: 'Invalid entity for reorder' });
+  }
+
+  const model = (prisma as any)[modelKey];
+
+  try {
+    // Run updates in a transaction
+    await prisma.$transaction(
+      items.map(item => 
+        model.update({
+          where: { id: item.id },
+          data: { order: item.order }
+        })
+      )
+    );
+    res.status(200).json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: 'Reorder failed' });
   }
 });
 

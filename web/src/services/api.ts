@@ -125,8 +125,12 @@ export const api = {
       body: JSON.stringify(tech)
     }).catch(() => {});
   },
-  updateTechnologies: (_techs: Technology[]): void => {
-    // Bulk updates not fully supported in simple Vercel backend yet
+  updateTechnologies: (techs: Technology[]): void => {
+    cache.techs = techs;
+    const reorderData = techs.map((t, index) => ({ id: t.id, order: index }));
+    fetch(`${API_BASE}/settings/technologies/reorder`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(reorderData)
+    }).catch(() => {});
   },
   deleteTechnology: (id: string): void => {
     cache.techs = cache.techs.filter((c) => c.id !== id);
@@ -169,7 +173,13 @@ export const api = {
       body: JSON.stringify(role)
     }).catch(() => {});
   },
-  updateRoles: (_roles: RoleOption[]): void => {},
+  updateRoles: (roles: RoleOption[]): void => {
+    cache.roles = roles;
+    const reorderData = roles.map((r, index) => ({ id: r.id, order: index }));
+    fetch(`${API_BASE}/settings/roles/reorder`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(reorderData)
+    }).catch(() => {});
+  },
   deleteRole: (id: string): void => {
     const item = cache.roles.find(r => r.id === id);
     cache.roles = cache.roles.filter((r) => r.id !== id);
@@ -191,7 +201,13 @@ export const api = {
       body: JSON.stringify(seniority)
     }).catch(() => {});
   },
-  updateSeniorities: (_seniorities: Seniority[]): void => {},
+  updateSeniorities: (seniorities: Seniority[]): void => {
+    cache.seniorities = seniorities;
+    const reorderData = seniorities.map((s, index) => ({ id: s.id, order: index }));
+    fetch(`${API_BASE}/settings/seniorities/reorder`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(reorderData)
+    }).catch(() => {});
+  },
   deleteSeniority: (id: string): void => {
     cache.seniorities = cache.seniorities.filter((s) => s.id !== id);
     fetch(`${API_BASE}/settings/seniorities?id=${id}`, { method: 'DELETE' }).catch(() => {});
@@ -210,7 +226,13 @@ export const api = {
       body: JSON.stringify(status)
     }).catch(() => {});
   },
-  updateStatuses: (_statuses: CandidateStatusOption[]): void => {},
+  updateStatuses: (statuses: CandidateStatusOption[]): void => {
+    cache.statuses = statuses;
+    const reorderData = statuses.map((s, index) => ({ id: s.id, order: index }));
+    fetch(`${API_BASE}/settings/statuses/reorder`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(reorderData)
+    }).catch(() => {});
+  },
   deleteStatus: (id: string): void => {
     cache.statuses = cache.statuses.filter((s) => s.id !== id);
     fetch(`${API_BASE}/settings/statuses?id=${id}`, { method: 'DELETE' }).catch(() => {});

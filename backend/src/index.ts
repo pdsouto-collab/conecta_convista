@@ -12,6 +12,10 @@ const prisma = new PrismaClient();
 app.use(cors());
 app.use(express.json());
 
+app.get('/', (req, res) => {
+  res.json({ status: 'API is running' });
+});
+
 // --- LOGGING ---
 app.get('/api/settings/logs', async (req, res) => {
   try {

@@ -2,8 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
-import pdfParse from 'pdf-parse';
-import mammoth from 'mammoth';
+const pdfParse = require('pdf-parse');
+const mammoth = require('mammoth');
 
 dotenv.config();
 

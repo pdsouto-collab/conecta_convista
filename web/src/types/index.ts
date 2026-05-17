@@ -16,6 +16,12 @@ export type RoleOption = {
   name: string;
 };
 
+export type LanguageOption = {
+  id: string;
+  name: string;
+  order?: number;
+};
+
 export type EvaluationMatrix = {
   id: string;
   criteria: string;

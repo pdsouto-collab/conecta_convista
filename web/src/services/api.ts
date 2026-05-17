@@ -11,6 +11,7 @@ export const cache = {
   roles: [] as RoleOption[],
   seniorities: [] as Seniority[],
   statuses: [] as CandidateStatusOption[],
+  languages: [] as import('../types').LanguageOption[],
   users: [] as User[]
 };
 
@@ -25,6 +26,7 @@ export const api = {
         fetch(`${API_BASE}/settings/roles`).then(r => r.json()),
         fetch(`${API_BASE}/settings/seniorities`).then(r => r.json()),
         fetch(`${API_BASE}/settings/statuses`).then(r => r.json()),
+        fetch(`${API_BASE}/settings/languages`).then(r => r.json()),
         fetch(`${API_BASE}/settings/users`).then(r => r.json()),
         fetch(`${API_BASE}/settings/logs`).then(r => r.json())
       ]);
@@ -34,6 +36,7 @@ export const api = {
       cache.roles = Array.isArray(roles) ? roles : [];
       cache.seniorities = Array.isArray(seniorities) ? seniorities : [];
       cache.statuses = Array.isArray(statuses) ? statuses : [];
+      cache.languages = Array.isArray(languages) ? languages : [];
       cache.users = Array.isArray(users) ? users : [];
       cache.logs = Array.isArray(logs) ? logs : [];
     } catch (e) {
@@ -247,6 +250,31 @@ export const api = {
   deleteStatus: (id: string): void => {
     cache.statuses = cache.statuses.filter((s) => s.id !== id);
     fetch(`${API_BASE}/settings/statuses?id=${id}`, { method: 'DELETE' }).catch(() => {});
+  },
+
+  // --- LANGUAGES ---
+  getLanguages: (): import('../types').LanguageOption[] => cache.languages,
+  saveLanguage: (lang: import('../types').LanguageOption): void => {
+    const existingIndex = cache.languages.findIndex((l) => l.id === lang.id);
+    if (existingIndex >= 0) { cache.languages[existingIndex] = lang; }
+    else { cache.languages.push(lang); }
+
+    fetch(`${API_BASE}/settings/languages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(lang)
+    }).catch(() => {});
+  },
+  updateLanguages: (langs: import('../types').LanguageOption[]): void => {
+    cache.languages = langs;
+    const reorderData = langs.map((l, index) => ({ id: l.id, order: index }));
+    fetch(`${API_BASE}/settings/languages/reorder`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(reorderData)
+    }).catch(() => {});
+  },
+  deleteLanguage: (id: string): void => {
+    cache.languages = cache.languages.filter((l) => l.id !== id);
+    fetch(`${API_BASE}/settings/languages?id=${id}`, { method: 'DELETE' }).catch(() => {});
   },
 
   // --- USERS & AUTH ---

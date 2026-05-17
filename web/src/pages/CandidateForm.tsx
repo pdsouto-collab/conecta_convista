@@ -54,6 +54,7 @@ const CandidateForm = () => {
   const [availableTechs, setAvailableTechs] = useState<Technology[]>([]);
   const [availableSeniorities, setAvailableSeniorities] = useState<Seniority[]>([]);
   const [availableRoles, setAvailableRoles] = useState<import('../types').RoleOption[]>([]);
+  const [availableLanguages, setAvailableLanguages] = useState<import('../types').LanguageOption[]>([]);
 
   useEffect(() => {
     const statuses = api.getStatuses();
@@ -64,6 +65,7 @@ const CandidateForm = () => {
     setAvailableTechs(api.getTechnologies());
     setAvailableSeniorities(api.getSeniorities());
     setAvailableRoles(api.getRoles());
+    setAvailableLanguages(api.getLanguages());
     if (isEditing && id) {
       const candidate = api.getCandidateById(id);
       if (candidate) {
@@ -240,10 +242,9 @@ const CandidateForm = () => {
               <label className="form-label">Idioma 1</label>
               <select className="form-control" name="language" value={formData.language || ''} onChange={handleChange}>
                 <option value="">Selecione...</option>
-                <option value="Alemão">Alemão</option>
-                <option value="Espanhol">Espanhol</option>
-                <option value="Inglês">Inglês</option>
-                <option value="Português">Português</option>
+                {availableLanguages.map(l => (
+                  <option key={l.id} value={l.name}>{l.name}</option>
+                ))}
               </select>
             </div>
             
@@ -267,10 +268,9 @@ const CandidateForm = () => {
               <label className="form-label">Idioma 2</label>
               <select className="form-control" name="language2" value={formData.language2 || ''} onChange={handleChange}>
                 <option value="">Selecione...</option>
-                <option value="Alemão">Alemão</option>
-                <option value="Espanhol">Espanhol</option>
-                <option value="Inglês">Inglês</option>
-                <option value="Português">Português</option>
+                {availableLanguages.map(l => (
+                  <option key={l.id} value={l.name}>{l.name}</option>
+                ))}
               </select>
             </div>
             
@@ -292,10 +292,9 @@ const CandidateForm = () => {
               <label className="form-label">Idioma 3</label>
               <select className="form-control" name="language3" value={formData.language3 || ''} onChange={handleChange}>
                 <option value="">Selecione...</option>
-                <option value="Alemão">Alemão</option>
-                <option value="Espanhol">Espanhol</option>
-                <option value="Inglês">Inglês</option>
-                <option value="Português">Português</option>
+                {availableLanguages.map(l => (
+                  <option key={l.id} value={l.name}>{l.name}</option>
+                ))}
               </select>
             </div>
             
@@ -317,10 +316,9 @@ const CandidateForm = () => {
               <label className="form-label">Idioma 4</label>
               <select className="form-control" name="language4" value={formData.language4 || ''} onChange={handleChange}>
                 <option value="">Selecione...</option>
-                <option value="Alemão">Alemão</option>
-                <option value="Espanhol">Espanhol</option>
-                <option value="Inglês">Inglês</option>
-                <option value="Português">Português</option>
+                {availableLanguages.map(l => (
+                  <option key={l.id} value={l.name}>{l.name}</option>
+                ))}
               </select>
             </div>
             

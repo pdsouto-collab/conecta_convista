@@ -46,6 +46,7 @@ app.all('/api/settings/:entity', async (req, res) => {
     seniorities: 'seniority',
     roles: 'roleOption',
     statuses: 'candidateStatusOption',
+    languages: 'languageOption',
     criteria: 'libraryCriteria',
     users: 'user',
     logs: 'systemLog'
@@ -60,9 +61,9 @@ app.all('/api/settings/:entity', async (req, res) => {
 
   if (req.method === 'GET') {
     try {
-      const orderBy = ['technology', 'seniority', 'roleOption', 'candidateStatusOption'].includes(modelKey) 
-        ? { order: 'asc' } 
-        : undefined;
+    const orderBy = ['technology', 'seniority', 'roleOption', 'candidateStatusOption', 'languageOption'].includes(modelKey) 
+      ? { order: 'asc' } 
+      : undefined;
       const items = await model.findMany({ orderBy });
       res.status(200).json(items);
     } catch (e) {
@@ -104,7 +105,8 @@ app.post('/api/settings/:entity/reorder', async (req, res) => {
     technologies: 'technology',
     seniorities: 'seniority',
     roles: 'roleOption',
-    statuses: 'candidateStatusOption'
+    statuses: 'candidateStatusOption',
+    languages: 'languageOption'
   };
 
   const modelKey = modelNameMap[entity];

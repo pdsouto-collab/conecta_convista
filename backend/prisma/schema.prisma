@@ -105,6 +105,12 @@ model CandidateStatusOption {
   order Int    @default(0)
 }
 
+model LanguageOption {
+  id    String @id @default(uuid())
+  name  String @unique
+  order Int    @default(0)
+}
+
 model SystemLog {
   id        String   @id @default(uuid())
   userId    String

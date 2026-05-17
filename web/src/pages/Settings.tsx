@@ -5,23 +5,26 @@ import type { Technology, LibraryCriteria, Seniority, CandidateStatusOption } fr
 import { Settings as SettingsIcon, Trash2, Plus, Edit, Save, X, GripVertical } from 'lucide-react';
 
 const Settings = () => {
-  const [activeTab, setActiveTab] = useState<'behavioral' | 'technical' | 'techs' | 'seniorities' | 'roles' | 'statuses'>('behavioral');
+  const [activeTab, setActiveTab] = useState<'behavioral' | 'technical' | 'techs' | 'languages' | 'seniorities' | 'roles' | 'statuses'>('behavioral');
   
   const [technologies, setTechnologies] = useState<Technology[]>([]);
   const [seniorities, setSeniorities] = useState<Seniority[]>([]);
   const [roles, setRoles] = useState<import('../types').RoleOption[]>([]);
   const [statuses, setStatuses] = useState<CandidateStatusOption[]>([]);
+  const [languages, setLanguages] = useState<import('../types').LanguageOption[]>([]);
   const [criteria, setCriteria] = useState<LibraryCriteria[]>([]);
 
   const [editingTech, setEditingTech] = useState<Technology | null>(null);
   const [editingSeniority, setEditingSeniority] = useState<Seniority | null>(null);
   const [editingRole, setEditingRole] = useState<import('../types').RoleOption | null>(null);
   const [editingStatus, setEditingStatus] = useState<CandidateStatusOption | null>(null);
+  const [editingLanguage, setEditingLanguage] = useState<import('../types').LanguageOption | null>(null);
   const [editingCriteria, setEditingCriteria] = useState<LibraryCriteria | null>(null);
 
   const [draggedSeniorityId, setDraggedSeniorityId] = useState<string | null>(null);
   const [draggedRoleId, setDraggedRoleId] = useState<string | null>(null);
   const [draggedStatusId, setDraggedStatusId] = useState<string | null>(null);
+  const [draggedLanguageId, setDraggedLanguageId] = useState<string | null>(null);
   const [draggedTechId, setDraggedTechId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -33,6 +36,7 @@ const Settings = () => {
     setSeniorities(api.getSeniorities());
     setRoles(api.getRoles());
     setStatuses(api.getStatuses());
+    setLanguages(api.getLanguages());
     setCriteria(api.getLibraryCriteria());
   };
 
@@ -174,6 +178,40 @@ const Settings = () => {
     setDraggedStatusId(null);
   };
 
+  // Language Handlers
+  const saveLanguage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingLanguage && editingLanguage.name.trim()) {
+      api.saveLanguage(editingLanguage);
+      setEditingLanguage(null);
+      loadData();
+    }
+  };
+
+  const deleteLanguage = (id: string) => {
+    if (confirm('Tem certeza que deseja excluir este idioma?')) {
+      api.deleteLanguage(id);
+      loadData();
+    }
+  };
+
+  const handleLanguageDragStart = (id: string) => setDraggedLanguageId(id);
+  
+  const handleLanguageDrop = (targetId: string) => {
+    if (!draggedLanguageId || draggedLanguageId === targetId) return;
+    
+    const sourceIndex = languages.findIndex(l => l.id === draggedLanguageId);
+    const targetIndex = languages.findIndex(l => l.id === targetId);
+    
+    const newLanguages = [...languages];
+    const [removed] = newLanguages.splice(sourceIndex, 1);
+    newLanguages.splice(targetIndex, 0, removed);
+    
+    setLanguages(newLanguages);
+    api.updateLanguages(newLanguages);
+    setDraggedLanguageId(null);
+  };
+
   // Criteria Handlers
   const saveCriteria = (e: React.FormEvent) => {
     e.preventDefault();
@@ -262,6 +300,87 @@ const Settings = () => {
                     <Edit size={16} />
                   </button>
                   <button className="btn btn-outline" style={{ padding: '0.25rem', border: 'none', color: 'var(--danger)' }} onClick={() => deleteTech(t.id)}>
+                    <Trash2 size={16} />
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  const renderLanguageTab = () => (
+    <div className="card" style={{ padding: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', alignItems: 'center' }}>
+        <h3 style={{ color: 'var(--primary)', margin: 0 }}>Cadastro de Idiomas</h3>
+        <button 
+          className="btn btn-primary" 
+          onClick={() => setEditingLanguage({ id: uuidv4(), name: '' })}
+          style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
+        >
+          <Plus size={16} /> Novo Idioma
+        </button>
+      </div>
+
+      {editingLanguage && (
+        <form onSubmit={saveLanguage} style={{ marginBottom: '1.5rem', padding: '1rem', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-main)' }}>
+          <div className="form-group" style={{ marginBottom: '1rem' }}>
+            <label className="form-label">Nome do Idioma</label>
+            <input 
+              autoFocus
+              className="form-control" 
+              value={editingLanguage.name} 
+              onChange={(e) => setEditingLanguage({ ...editingLanguage, name: e.target.value })} 
+              required
+            />
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+            <button type="button" className="btn btn-outline" onClick={() => setEditingLanguage(null)}><X size={16} /> Cancelar</button>
+            <button type="submit" className="btn btn-primary"><Save size={16} /> Salvar</button>
+          </div>
+        </form>
+      )}
+
+      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <thead>
+          <tr style={{ borderBottom: '1px solid var(--border)' }}>
+            <th style={{ padding: '0.75rem 0' }}>Nome</th>
+            <th style={{ padding: '0.75rem 0', width: '100px', textAlign: 'right' }}>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {languages.length === 0 ? (
+            <tr><td colSpan={2} style={{ padding: '1rem 0', textAlign: 'center', color: 'var(--text-muted)' }}>Nenhum idioma cadastrado.</td></tr>
+          ) : (
+            languages.map(l => (
+              <tr 
+                key={l.id} 
+                style={{ 
+                  borderBottom: '1px solid var(--border)',
+                  backgroundColor: draggedLanguageId === l.id ? 'var(--bg-main)' : 'transparent',
+                  opacity: draggedLanguageId === l.id ? 0.5 : 1
+                }}
+                draggable
+                onDragStart={() => handleLanguageDragStart(l.id)}
+                onDragOver={handleDragOver}
+                onDrop={() => handleLanguageDrop(l.id)}
+                onDragEnd={() => setDraggedLanguageId(null)}
+              >
+                <td style={{ padding: '0.75rem 0', fontWeight: 500 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{ cursor: 'grab', display: 'flex', alignItems: 'center' }}>
+                      <GripVertical size={16} style={{ color: 'var(--text-muted)' }} />
+                    </div>
+                    {l.name}
+                  </div>
+                </td>
+                <td style={{ padding: '0.75rem 0', textAlign: 'right' }}>
+                  <button className="btn btn-outline" style={{ padding: '0.25rem', marginRight: '0.25rem', border: 'none' }} onClick={() => setEditingLanguage(l)}>
+                    <Edit size={16} />
+                  </button>
+                  <button className="btn btn-outline" style={{ padding: '0.25rem', border: 'none', color: 'var(--danger)' }} onClick={() => deleteLanguage(l.id)}>
                     <Trash2 size={16} />
                   </button>
                 </td>
@@ -659,6 +778,17 @@ const Settings = () => {
         <button 
           style={{ 
             background: 'none', border: 'none', padding: '1rem 0', cursor: 'pointer',
+            borderBottom: activeTab === 'languages' ? '2px solid var(--primary)' : '2px solid transparent',
+            color: activeTab === 'languages' ? 'var(--primary)' : 'var(--text-muted)',
+            fontWeight: activeTab === 'languages' ? 600 : 500
+          }}
+          onClick={() => setActiveTab('languages')}
+        >
+          Idiomas
+        </button>
+        <button 
+          style={{ 
+            background: 'none', border: 'none', padding: '1rem 0', cursor: 'pointer',
             borderBottom: activeTab === 'seniorities' ? '2px solid var(--primary)' : '2px solid transparent',
             color: activeTab === 'seniorities' ? 'var(--primary)' : 'var(--text-muted)',
             fontWeight: activeTab === 'seniorities' ? 600 : 500
@@ -695,6 +825,7 @@ const Settings = () => {
         {activeTab === 'behavioral' && renderCriteriaTab('Comportamental')}
         {activeTab === 'technical' && renderCriteriaTab('Técnico')}
         {activeTab === 'techs' && renderTechTab()}
+        {activeTab === 'languages' && renderLanguageTab()}
         {activeTab === 'seniorities' && renderSeniorityTab()}
         {activeTab === 'roles' && renderRoleTab()}
         {activeTab === 'statuses' && renderStatusTab()}

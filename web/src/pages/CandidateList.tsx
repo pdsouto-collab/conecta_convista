@@ -157,7 +157,7 @@ const CandidateList = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <div>
           <h1 style={{ fontSize: '1.875rem', marginBottom: '0.5rem' }}>Candidatos</h1>
-          <p style={{ color: 'var(--text-muted)' }}>Gerencie e filtre o banco de currículos. ${totalCount > 0 ? `(${totalCount} registros encontrados)` : ''}</p>
+          <p style={{ color: 'var(--text-muted)' }}>Gerencie e filtre o banco de currículos.</p>
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <button className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }} onClick={exportToCSV}>

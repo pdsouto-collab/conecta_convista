@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
-import pdfParse from 'pdf-parse';
+const pdfParse = require('pdf-parse');
 import mammoth from 'mammoth';
 import dotenv from 'dotenv';
 
@@ -63,7 +63,7 @@ app.all('/api/settings/:entity', async (req, res) => {
 
   if (req.method === 'GET') {
     try {
-    const orderBy = ['technology', 'seniority', 'roleOption', 'candidateStatusOption', 'languageOption'].includes(modelKey) 
+    const orderBy = ['technology', 'seniority', 'roleOption', 'candidateStatusOption', 'languageOption'].includes(modelKey as string) 
       ? { order: 'asc' } 
       : undefined;
       const items = await model.findMany({ orderBy });

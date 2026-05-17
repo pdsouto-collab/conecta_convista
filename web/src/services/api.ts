@@ -151,7 +151,7 @@ export const api = {
     else { cache.techs.push(tech); }
 
     fetch(`${API_BASE}/settings/technologies`, {
-      method: 'POST',
+      method: existingIndex >= 0 ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(tech)
     }).catch(() => {});
@@ -176,7 +176,7 @@ export const api = {
     else { cache.criteria.push(criteria); }
 
     fetch(`${API_BASE}/settings/criteria`, {
-      method: 'POST',
+      method: existingIndex >= 0 ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(criteria)
     }).catch(() => {});
@@ -199,7 +199,7 @@ export const api = {
     }
 
     fetch(`${API_BASE}/settings/roles`, {
-      method: 'POST',
+      method: existingIndex >= 0 ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(role)
     }).catch(() => {});
@@ -227,7 +227,7 @@ export const api = {
     else { cache.seniorities.push(seniority); }
 
     fetch(`${API_BASE}/settings/seniorities`, {
-      method: 'POST',
+      method: existingIndex >= 0 ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(seniority)
     }).catch(() => {});
@@ -252,7 +252,7 @@ export const api = {
     else { cache.statuses.push(status); }
 
     fetch(`${API_BASE}/settings/statuses`, {
-      method: 'POST',
+      method: existingIndex >= 0 ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(status)
     }).catch(() => {});
@@ -277,7 +277,7 @@ export const api = {
     else { cache.languages.push(lang); }
 
     fetch(`${API_BASE}/settings/languages`, {
-      method: 'POST',
+      method: existingIndex >= 0 ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(lang)
     }).catch(() => {});

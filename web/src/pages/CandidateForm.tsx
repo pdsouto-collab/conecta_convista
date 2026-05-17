@@ -162,6 +162,10 @@ const CandidateForm = () => {
 
   const openCV = () => {
     if (formData.cvFile) {
+      if (formData.cvFile.startsWith('http://') || formData.cvFile.startsWith('https://')) {
+        window.open(formData.cvFile, '_blank');
+        return;
+      }
       try {
         const base64Data = formData.cvFile.includes(',') ? formData.cvFile.split(',')[1] : formData.cvFile;
         const byteCharacters = atob(base64Data);

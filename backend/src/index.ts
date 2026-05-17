@@ -3,6 +3,7 @@ import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 const pdfParse = require('pdf-parse');
 import mammoth from 'mammoth';
+import { put } from '@vercel/blob';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -212,6 +213,27 @@ app.post('/api/candidates', async (req, res) => {
       technicalEvaluation.forEach(e => newEvals.push({ ...e, type: 'TECHNICAL', id: undefined }));
     }
 
+    // Process CV Upload to Vercel Blob if it's a Base64 string
+    if (rest.cvFile && rest.cvFile.startsWith('data:')) {
+      if (process.env.BLOB_READ_WRITE_TOKEN) {
+        try {
+          const match = rest.cvFile.match(/^data:(.+);base64,(.+)$/);
+          if (match) {
+            const buffer = Buffer.from(match[2], 'base64');
+            const blob = await put(`cvs/${Date.now()}_${rest.cvFileName || 'document'}`, buffer, {
+              access: 'public',
+              contentType: match[1]
+            });
+            rest.cvFile = blob.url; // Save the Vercel Blob URL instead of base64
+          }
+        } catch (err) {
+          console.error("Vercel Blob upload failed, falling back to base64:", err);
+        }
+      } else {
+        console.warn("BLOB_READ_WRITE_TOKEN not set. Saving CV as Base64 in DB (Not recommended for production).");
+      }
+    }
+
     const candidate = await prisma.candidate.create({
       data: {
         ...rest,
@@ -234,6 +256,27 @@ app.put('/api/candidates/:id', async (req, res) => {
     const data = req.body;
     const { behavioralEvaluation, technicalEvaluation, evaluations, id: _, createdAt, ...rest } = data;
     
+    // Process CV Upload to Vercel Blob if it's a Base64 string
+    if (rest.cvFile && rest.cvFile.startsWith('data:')) {
+      if (process.env.BLOB_READ_WRITE_TOKEN) {
+        try {
+          const match = rest.cvFile.match(/^data:(.+);base64,(.+)$/);
+          if (match) {
+            const buffer = Buffer.from(match[2], 'base64');
+            const blob = await put(`cvs/${Date.now()}_${rest.cvFileName || 'document'}`, buffer, {
+              access: 'public',
+              contentType: match[1]
+            });
+            rest.cvFile = blob.url;
+          }
+        } catch (err) {
+          console.error("Vercel Blob upload failed on update, falling back to base64:", err);
+        }
+      } else {
+        console.warn("BLOB_READ_WRITE_TOKEN not set. Saving CV as Base64 in DB (Not recommended for production).");
+      }
+    }
+
     const candidate = await prisma.candidate.update({
       where: { id },
       data: rest

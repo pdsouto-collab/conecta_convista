@@ -1,0 +1,118 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Candidate {
+  id                    String   @id @default(uuid())
+  name                  String
+  email                 String   @unique
+  phone                 String?
+  linkedin              String?
+  technologies          String[]
+  availability          String
+  seniority             String
+  cvFileName            String?
+  cvText                String?
+  createdAt             String
+
+  candidateSource       String?
+  workBase              String?
+  language              String?
+  languageProficiency   String?
+  language2             String?
+  languageProficiency2  String?
+  language3             String?
+  languageProficiency3  String?
+  language4             String?
+  languageProficiency4  String?
+  birthDate             String?
+  
+  salaryExpectationPJ   String?
+  salaryExpectationCLT  String?
+  availableFrom         String?
+  interviewDate         String?
+  interviewer1          String?
+  interviewer2          String?
+  interviewer3          String?
+
+  role                  String?
+  experienceIT          String?
+  experienceRole        String?
+  
+  isExConvista          Boolean? @default(false)
+  mainProjects          String?
+  lastContactDate       String?
+  hasRestriction        Boolean? @default(false)
+  restrictionDetails    String?
+
+  generalNotes          String?
+  status                String   @default("Novo")
+
+  evaluations           EvaluationMatrix[]
+}
+
+model EvaluationMatrix {
+  id          String   @id @default(uuid())
+  criteria    String
+  score       Int
+  observation String?
+  type        String // "BEHAVIORAL" or "TECHNICAL"
+
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id        String   @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String   @unique
+  position  String?
+  role      String   @default("interviewer")
+  password  String
+  active    Boolean  @default(true)
+}
+
+model Technology {
+  id   String @id @default(uuid())
+  name String @unique
+}
+
+model Seniority {
+  id   String @id @default(uuid())
+  name String @unique
+}
+
+model RoleOption {
+  id   String @id @default(uuid())
+  name String @unique
+}
+
+model CandidateStatusOption {
+  id   String @id @default(uuid())
+  name String @unique
+}
+
+model SystemLog {
+  id        String   @id @default(uuid())
+  userId    String
+  userName  String
+  action    String
+  entity    String
+  details   String?
+  timestamp String
+}
+
+model LibraryCriteria {
+  id           String  @id @default(uuid())
+  name         String
+  type         String  // "Comportamental" ou "Técnico"
+  technologyId String? // Optional, only for Técnico
+}

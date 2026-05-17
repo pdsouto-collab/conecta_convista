@@ -20,6 +20,7 @@ model Candidate {
   seniority             String
   cvFileName            String?
   cvText                String?
+  cvFile                String?
   createdAt             String
 
   candidateSource       String?

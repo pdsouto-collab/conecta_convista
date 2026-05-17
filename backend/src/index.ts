@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
+import pdfParse from 'pdf-parse';
+import mammoth from 'mammoth';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -129,6 +131,33 @@ app.post('/api/settings/:entity/reorder', async (req, res) => {
     res.status(200).json({ success: true });
   } catch (e) {
     res.status(500).json({ error: 'Reorder failed' });
+  }
+});
+
+// --- EXTRACT CV ---
+app.post('/api/extract-cv', async (req, res) => {
+  try {
+    const { cvFile, cvFileName } = req.body;
+    if (!cvFile || !cvFileName) return res.status(400).json({ error: 'Missing file data' });
+
+    const base64Data = cvFile.includes(',') ? cvFile.split(',')[1] : cvFile;
+    const buffer = Buffer.from(base64Data, 'base64');
+    let extractedText = '';
+
+    if (cvFileName.toLowerCase().endsWith('.pdf')) {
+      const pdfData = await pdfParse(buffer);
+      extractedText = pdfData.text;
+    } else if (cvFileName.toLowerCase().endsWith('.doc') || cvFileName.toLowerCase().endsWith('.docx')) {
+      const result = await mammoth.extractRawText({ buffer });
+      extractedText = result.value;
+    } else {
+      return res.status(400).json({ error: 'Unsupported file format' });
+    }
+
+    res.status(200).json({ text: extractedText.trim() });
+  } catch (e) {
+    console.error("Extraction error:", e);
+    res.status(500).json({ error: 'Failed to extract text' });
   }
 });
 

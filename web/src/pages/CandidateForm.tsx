@@ -114,22 +114,35 @@ const CandidateForm = () => {
     });
   };
 
+  const [isExtractingText, setIsExtractingText] = useState(false);
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setFileName(file.name);
-      // Simulate file text extraction (OCR / pdf parser) for mock
-      const mockExtraction = `Documento: ${file.name}\nConteúdo extraído simulado para fins de busca do sistema...`;
       
       setFormData(prev => ({ 
         ...prev, 
-        cvFileName: file.name,
-        cvText: prev.cvText ? prev.cvText : mockExtraction
+        cvFileName: file.name
       }));
       
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, cvFile: reader.result as string }));
+      reader.onloadend = async () => {
+        const result = reader.result as string;
+        setFormData(prev => ({ ...prev, cvFile: result }));
+        
+        // Auto-extract text via backend
+        setIsExtractingText(true);
+        try {
+          const extracted = await api.extractCvText(result, file.name);
+          if (extracted) {
+            setFormData(prev => ({ ...prev, cvText: extracted }));
+          } else if (!formData.cvText) {
+            setFormData(prev => ({ ...prev, cvText: `Falha ao extrair texto do documento: ${file.name}` }));
+          }
+        } finally {
+          setIsExtractingText(false);
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -543,17 +556,23 @@ const CandidateForm = () => {
               </div>
             )}
             
-            <div className="form-group" style={{ marginTop: '2rem', textAlign: 'left' }}>
-              <label className="form-label">Texto do Currículo (para Busca por Palavras-Chave)</label>
+            <div className="form-group" style={{ marginTop: '2rem', textAlign: 'left', position: 'relative' }}>
+              <label className="form-label">Texto Extraído do Currículo (para Busca Global)</label>
+              {isExtractingText && (
+                <div style={{ position: 'absolute', top: '2rem', left: 0, right: 0, bottom: '2rem', backgroundColor: 'rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+                  <span style={{ fontWeight: 500, color: 'var(--primary)' }}>Extraindo texto do documento...</span>
+                </div>
+              )}
               <textarea 
                 className="form-control" 
                 name="cvText" 
                 value={formData.cvText || ''} 
                 onChange={handleChange} 
                 rows={4} 
-                placeholder="Insira palavras chaves ou texto extraído do CV..." 
+                disabled={isExtractingText}
+                placeholder="Insira palavras chaves ou aguarde a extração automática..." 
               />
-              <small style={{ color: 'var(--text-muted)' }}>Ao subir um arquivo o sistema fará a extração desse texto automaticamente.</small>
+              <small style={{ color: 'var(--text-muted)' }}>Ao subir um PDF ou DOCX, o sistema fará a extração desse texto automaticamente para o motor de busca.</small>
             </div>
           </div>
         </div>

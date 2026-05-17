@@ -112,6 +112,23 @@ export const api = {
     });
   },
 
+  extractCvText: async (cvFile: string, cvFileName: string): Promise<string> => {
+    try {
+      const response = await fetch(`${API_BASE}/extract-cv`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cvFile, cvFileName })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        return data.text || '';
+      }
+    } catch (e) {
+      console.error("Failed to extract CV text", e);
+    }
+    return '';
+  },
+
   deleteCandidate: (id: string): void => {
     const candidate = cache.candidates.find(c => c.id === id);
     cache.candidates = cache.candidates.filter((c) => c.id !== id);

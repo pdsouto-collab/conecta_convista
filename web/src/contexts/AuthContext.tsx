@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loggedStr = localStorage.getItem('@conecta_convista_loggedUser');
+    const loggedStr = localStorage.getItem('convista_user');
     if (loggedStr) {
       try {
         setUser(JSON.parse(loggedStr));
@@ -31,12 +31,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = (newUser: User) => {
-    localStorage.setItem('@conecta_convista_loggedUser', JSON.stringify(newUser));
+    localStorage.setItem('convista_user', JSON.stringify(newUser));
     setUser(newUser);
   };
 
   const logout = () => {
-    localStorage.removeItem('@conecta_convista_loggedUser');
+    localStorage.removeItem('convista_user');
+    localStorage.removeItem('convista_token');
     setUser(null);
   };
 

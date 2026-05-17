@@ -10,6 +10,28 @@ const app = express();
 
 const prisma = new PrismaClient();
 
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'convista-secret-key-super-secure';
+
+const authMiddleware = (req: any, res: any, next: any) => {
+  if (req.method === 'OPTIONS') return next();
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ error: 'Token não fornecido' });
+  }
+  const token = authHeader.split(' ')[1];
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Token inválido ou expirado' });
+  }
+};
+
+
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
@@ -36,6 +58,39 @@ app.post('/api/settings/logs', async (req, res) => {
     res.status(500).json({ error: 'Erro ao salvar' });
   }
 });
+
+
+// --- AUTH ---
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || !user.active) {
+      return res.status(401).json({ error: 'Credenciais inválidas' });
+    }
+
+    let isValid = false;
+    if (password === user.password) {
+      isValid = true;
+    } else {
+      isValid = await bcrypt.compare(password, user.password);
+    }
+
+    if (!isValid) {
+      return res.status(401).json({ error: 'Credenciais inválidas' });
+    }
+
+    const token = jwt.sign({ id: user.id, email: user.email, role: user.role, name: `${user.firstName} ${user.lastName}` }, JWT_SECRET, { expiresIn: '8h' });
+    res.json({ token, user: { id: user.id, email: user.email, role: user.role, firstName: user.firstName, lastName: user.lastName } });
+  } catch (e) {
+    res.status(500).json({ error: 'Erro no servidor' });
+  }
+});
+
+// Protect all routes below
+app.use('/api/settings', authMiddleware);
+app.use('/api/candidates', authMiddleware);
+app.use('/api/extract-cv', authMiddleware);
 
 // --- SETTINGS (GENERIC) ---
 app.all('/api/settings/:entity', async (req, res) => {
@@ -72,7 +127,13 @@ app.all('/api/settings/:entity', async (req, res) => {
     }
   } else if (req.method === 'POST') {
     try {
-      const item = await model.create({ data: req.body });
+      
+      let data = { ...req.body };
+      if (modelKey === 'user' && data.password) {
+        data.password = await bcrypt.hash(data.password, 10);
+      }
+      const item = await model.create({ data });
+
       res.status(201).json(item);
     } catch (e) {
       res.status(500).json({ error: 'Create failed' });
@@ -80,7 +141,13 @@ app.all('/api/settings/:entity', async (req, res) => {
   } else if (req.method === 'PUT') {
     try {
       const { id: _, ...rest } = req.body;
-      const item = await model.update({ where: { id: id || req.body.id }, data: rest });
+      
+      let dataToUpdate = { ...rest };
+      if (modelKey === 'user' && dataToUpdate.password) {
+        dataToUpdate.password = await bcrypt.hash(dataToUpdate.password, 10);
+      }
+      const item = await model.update({ where: { id: id || req.body.id }, data: dataToUpdate });
+
       res.status(200).json(item);
     } catch (e) {
       res.status(500).json({ error: 'Update failed' });

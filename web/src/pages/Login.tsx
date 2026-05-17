@@ -11,18 +11,32 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    const users = api.getUsers();
-    const user = users.find(u => u.email === email && u.password === password && u.active);
+    try {
+      const response = await fetch((import.meta.env.VITE_API_URL || '/api') + '/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
 
-    if (user) {
-      login(user);
+      if (!response.ok) {
+        throw new Error('Credenciais inválidas ou usuário inativo.');
+      }
+
+      const data = await response.json();
+      localStorage.setItem('convista_token', data.token);
+      localStorage.setItem('convista_user', JSON.stringify(data.user));
+      login(data.user);
+      
+      // Resync data after login
+      await api.syncFromServer();
+      
       navigate('/dashboard');
-    } else {
-      setError('Credenciais inválidas ou usuário inativo.');
+    } catch (err: any) {
+      setError(err.message || 'Erro ao realizar login.');
     }
   };
 

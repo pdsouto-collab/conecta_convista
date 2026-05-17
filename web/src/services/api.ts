@@ -2,6 +2,23 @@ import type { Candidate, Technology, LibraryCriteria, RoleOption, Seniority, Can
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
+const authFetch = async (url: string, options: RequestInit = {}) => {
+  const token = localStorage.getItem('convista_token');
+  const headers = new Headers(options.headers || {});
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+  
+  const response = await fetch(url, { ...options, headers });
+  if (response.status === 401) {
+    localStorage.removeItem('convista_token');
+    localStorage.removeItem('convista_user');
+    window.location.hash = '#/login'; // Redirect to login
+  }
+  return response;
+};
+
+
 // Cache em memória para leitura síncrona
 export const cache = {
   logs: [] as SystemLog[],
@@ -20,15 +37,15 @@ export const api = {
   syncFromServer: async () => {
     try {
       const [candidates, techs, criteria, roles, seniorities, statuses, languages, users, logs] = await Promise.all([
-        fetch(`${API_BASE}/candidates`).then(r => r.json()),
-        fetch(`${API_BASE}/settings/technologies`).then(r => r.json()),
-        fetch(`${API_BASE}/settings/criteria`).then(r => r.json()),
-        fetch(`${API_BASE}/settings/roles`).then(r => r.json()),
-        fetch(`${API_BASE}/settings/seniorities`).then(r => r.json()),
-        fetch(`${API_BASE}/settings/statuses`).then(r => r.json()),
-        fetch(`${API_BASE}/settings/languages`).then(r => r.json()),
-        fetch(`${API_BASE}/settings/users`).then(r => r.json()),
-        fetch(`${API_BASE}/settings/logs`).then(r => r.json())
+        authFetch(`${API_BASE}/candidates`).then(r => r.json()),
+        authFetch(`${API_BASE}/settings/technologies`).then(r => r.json()),
+        authFetch(`${API_BASE}/settings/criteria`).then(r => r.json()),
+        authFetch(`${API_BASE}/settings/roles`).then(r => r.json()),
+        authFetch(`${API_BASE}/settings/seniorities`).then(r => r.json()),
+        authFetch(`${API_BASE}/settings/statuses`).then(r => r.json()),
+        authFetch(`${API_BASE}/settings/languages`).then(r => r.json()),
+        authFetch(`${API_BASE}/settings/users`).then(r => r.json()),
+        authFetch(`${API_BASE}/settings/logs`).then(r => r.json())
       ]);
       cache.candidates = Array.isArray(candidates) ? candidates : [];
       cache.techs = Array.isArray(techs) ? techs : [];
@@ -64,7 +81,7 @@ export const api = {
     cache.logs.unshift(newLog);
 
     // Fire and forget
-    fetch(`${API_BASE}/settings/logs`, {
+    authFetch(`${API_BASE}/settings/logs`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newLog)
@@ -94,7 +111,7 @@ export const api = {
     }
     
     // Fire and forget sync with error alert
-    fetch(url, {
+    authFetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(candidate)
@@ -114,7 +131,7 @@ export const api = {
 
   extractCvText: async (cvFile: string, cvFileName: string): Promise<string> => {
     try {
-      const response = await fetch(`${API_BASE}/extract-cv`, {
+      const response = await authFetch(`${API_BASE}/extract-cv`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cvFile, cvFileName })
@@ -136,7 +153,7 @@ export const api = {
       api.addLog('DELETE', 'Candidato', `Candidato excluído: ${candidate.name}`);
     }
 
-    fetch(`${API_BASE}/candidates/${id}`, { method: 'DELETE' }).catch(() => {});
+    authFetch(`${API_BASE}/candidates/${id}`, { method: 'DELETE' }).catch(() => {});
   },
   
   seedMockData: () => {
@@ -150,7 +167,7 @@ export const api = {
     if (existingIndex >= 0) { cache.techs[existingIndex] = tech; }
     else { cache.techs.push(tech); }
 
-    fetch(`${API_BASE}/settings/technologies`, {
+    authFetch(`${API_BASE}/settings/technologies`, {
       method: existingIndex >= 0 ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(tech)
@@ -159,13 +176,13 @@ export const api = {
   updateTechnologies: (techs: Technology[]): void => {
     cache.techs = techs;
     const reorderData = techs.map((t, index) => ({ id: t.id, order: index }));
-    fetch(`${API_BASE}/settings/technologies/reorder`, {
+    authFetch(`${API_BASE}/settings/technologies/reorder`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(reorderData)
     }).catch(() => {});
   },
   deleteTechnology: (id: string): void => {
     cache.techs = cache.techs.filter((c) => c.id !== id);
-    fetch(`${API_BASE}/settings/technologies?id=${id}`, { method: 'DELETE' }).catch(() => {});
+    authFetch(`${API_BASE}/settings/technologies?id=${id}`, { method: 'DELETE' }).catch(() => {});
   },
 
   // --- CRITERIA LIBRARY ---
@@ -175,7 +192,7 @@ export const api = {
     if (existingIndex >= 0) { cache.criteria[existingIndex] = criteria; }
     else { cache.criteria.push(criteria); }
 
-    fetch(`${API_BASE}/settings/criteria`, {
+    authFetch(`${API_BASE}/settings/criteria`, {
       method: existingIndex >= 0 ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(criteria)
@@ -183,7 +200,7 @@ export const api = {
   },
   deleteLibraryCriteria: (id: string): void => {
     cache.criteria = cache.criteria.filter((c) => c.id !== id);
-    fetch(`${API_BASE}/settings/criteria?id=${id}`, { method: 'DELETE' }).catch(() => {});
+    authFetch(`${API_BASE}/settings/criteria?id=${id}`, { method: 'DELETE' }).catch(() => {});
   },
 
   // --- ROLES ---
@@ -198,7 +215,7 @@ export const api = {
       api.addLog('CREATE', 'Configuração', `Novo cargo cadastrado: ${role.name}`);
     }
 
-    fetch(`${API_BASE}/settings/roles`, {
+    authFetch(`${API_BASE}/settings/roles`, {
       method: existingIndex >= 0 ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(role)
@@ -207,7 +224,7 @@ export const api = {
   updateRoles: (roles: RoleOption[]): void => {
     cache.roles = roles;
     const reorderData = roles.map((r, index) => ({ id: r.id, order: index }));
-    fetch(`${API_BASE}/settings/roles/reorder`, {
+    authFetch(`${API_BASE}/settings/roles/reorder`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(reorderData)
     }).catch(() => {});
   },
@@ -216,7 +233,7 @@ export const api = {
     cache.roles = cache.roles.filter((r) => r.id !== id);
     if (item) api.addLog('DELETE', 'Configuração', `Cargo excluído: ${item.name}`);
 
-    fetch(`${API_BASE}/settings/roles?id=${id}`, { method: 'DELETE' }).catch(() => {});
+    authFetch(`${API_BASE}/settings/roles?id=${id}`, { method: 'DELETE' }).catch(() => {});
   },
 
   // --- SENIORITIES ---
@@ -226,7 +243,7 @@ export const api = {
     if (existingIndex >= 0) { cache.seniorities[existingIndex] = seniority; }
     else { cache.seniorities.push(seniority); }
 
-    fetch(`${API_BASE}/settings/seniorities`, {
+    authFetch(`${API_BASE}/settings/seniorities`, {
       method: existingIndex >= 0 ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(seniority)
@@ -235,13 +252,13 @@ export const api = {
   updateSeniorities: (seniorities: Seniority[]): void => {
     cache.seniorities = seniorities;
     const reorderData = seniorities.map((s, index) => ({ id: s.id, order: index }));
-    fetch(`${API_BASE}/settings/seniorities/reorder`, {
+    authFetch(`${API_BASE}/settings/seniorities/reorder`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(reorderData)
     }).catch(() => {});
   },
   deleteSeniority: (id: string): void => {
     cache.seniorities = cache.seniorities.filter((s) => s.id !== id);
-    fetch(`${API_BASE}/settings/seniorities?id=${id}`, { method: 'DELETE' }).catch(() => {});
+    authFetch(`${API_BASE}/settings/seniorities?id=${id}`, { method: 'DELETE' }).catch(() => {});
   },
 
   // --- STATUSES ---
@@ -251,7 +268,7 @@ export const api = {
     if (existingIndex >= 0) { cache.statuses[existingIndex] = status; }
     else { cache.statuses.push(status); }
 
-    fetch(`${API_BASE}/settings/statuses`, {
+    authFetch(`${API_BASE}/settings/statuses`, {
       method: existingIndex >= 0 ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(status)
@@ -260,13 +277,13 @@ export const api = {
   updateStatuses: (statuses: CandidateStatusOption[]): void => {
     cache.statuses = statuses;
     const reorderData = statuses.map((s, index) => ({ id: s.id, order: index }));
-    fetch(`${API_BASE}/settings/statuses/reorder`, {
+    authFetch(`${API_BASE}/settings/statuses/reorder`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(reorderData)
     }).catch(() => {});
   },
   deleteStatus: (id: string): void => {
     cache.statuses = cache.statuses.filter((s) => s.id !== id);
-    fetch(`${API_BASE}/settings/statuses?id=${id}`, { method: 'DELETE' }).catch(() => {});
+    authFetch(`${API_BASE}/settings/statuses?id=${id}`, { method: 'DELETE' }).catch(() => {});
   },
 
   // --- LANGUAGES ---
@@ -276,7 +293,7 @@ export const api = {
     if (existingIndex >= 0) { cache.languages[existingIndex] = lang; }
     else { cache.languages.push(lang); }
 
-    fetch(`${API_BASE}/settings/languages`, {
+    authFetch(`${API_BASE}/settings/languages`, {
       method: existingIndex >= 0 ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(lang)
@@ -285,13 +302,13 @@ export const api = {
   updateLanguages: (langs: import('../types').LanguageOption[]): void => {
     cache.languages = langs;
     const reorderData = langs.map((l, index) => ({ id: l.id, order: index }));
-    fetch(`${API_BASE}/settings/languages/reorder`, {
+    authFetch(`${API_BASE}/settings/languages/reorder`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(reorderData)
     }).catch(() => {});
   },
   deleteLanguage: (id: string): void => {
     cache.languages = cache.languages.filter((l) => l.id !== id);
-    fetch(`${API_BASE}/settings/languages?id=${id}`, { method: 'DELETE' }).catch(() => {});
+    authFetch(`${API_BASE}/settings/languages?id=${id}`, { method: 'DELETE' }).catch(() => {});
   },
 
   // --- USERS & AUTH ---
@@ -306,7 +323,7 @@ export const api = {
       api.addLog('CREATE', 'Usuário', `Novo usuário cadastrado: ${user.firstName} ${user.lastName}`);
     }
 
-    fetch(`${API_BASE}/settings/users`, {
+    authFetch(`${API_BASE}/settings/users`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(user)
@@ -319,7 +336,7 @@ export const api = {
       api.addLog('DELETE', 'Usuário', `Usuário excluído: ${user.firstName} ${user.lastName}`);
     }
 
-    fetch(`${API_BASE}/settings/users?id=${id}`, { method: 'DELETE' }).catch(() => {});
+    authFetch(`${API_BASE}/settings/users?id=${id}`, { method: 'DELETE' }).catch(() => {});
   }
 };
 

@@ -147,10 +147,41 @@ const CandidateProfile = () => {
 
   const openCV = () => {
     if (candidate?.cvFile) {
-      // Create an iframe to preview or download
-      const w = window.open('about:blank');
-      if (w) {
-         w.document.write(`<iframe src="${candidate.cvFile}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+      try {
+        // Tratar caso o arquivo seja base64 com prefixo
+        const base64Data = candidate.cvFile.includes(',') ? candidate.cvFile.split(',')[1] : candidate.cvFile;
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        
+        // Detectar o tipo (simplificado para PDF/Word)
+        const isPdf = candidate.cvFileName?.toLowerCase().endsWith('.pdf');
+        const mimeType = isPdf ? 'application/pdf' : 'application/octet-stream';
+        
+        const blob = new Blob([byteArray], { type: mimeType });
+        const blobUrl = URL.createObjectURL(blob);
+        
+        if (isPdf) {
+          window.open(blobUrl, '_blank');
+        } else {
+          // Se for DOC/DOCX forçar o download
+          const a = document.createElement('a');
+          a.href = blobUrl;
+          a.download = candidate.cvFileName || 'curriculo';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
+      } catch (e) {
+        console.error("Erro ao converter arquivo", e);
+        // Fallback
+        const w = window.open('about:blank');
+        if (w) {
+           w.document.write(`<iframe src="${candidate.cvFile}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+        }
       }
     } else {
       alert("Nenhum CV anexado.");

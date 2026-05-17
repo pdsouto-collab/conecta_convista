@@ -1,8 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
-const pdfParse = require('pdf-parse');
-import mammoth from 'mammoth';
 import { put } from '@vercel/blob';
 import dotenv from 'dotenv';
 
@@ -146,9 +144,11 @@ app.post('/api/extract-cv', async (req, res) => {
     let extractedText = '';
 
     if (cvFileName.toLowerCase().endsWith('.pdf')) {
+      const pdfParse = require('pdf-parse');
       const pdfData = await pdfParse(buffer);
       extractedText = pdfData.text;
     } else if (cvFileName.toLowerCase().endsWith('.doc') || cvFileName.toLowerCase().endsWith('.docx')) {
+      const mammoth = require('mammoth');
       const result = await mammoth.extractRawText({ buffer });
       extractedText = result.value;
     } else {

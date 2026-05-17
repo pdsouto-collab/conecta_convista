@@ -28,6 +28,11 @@ const CandidateForm = () => {
     interviewer1: '',
     interviewer2: '',
     interviewer3: '',
+    candidateSource: '',
+    workBase: '',
+    language: '',
+    languageProficiency: '',
+    birthDate: '',
     behavioralEvaluation: [
       { id: uuidv4(), criteria: 'Comunicação', score: 0, observation: '' },
       { id: uuidv4(), criteria: 'Trabalho em Equipe', score: 0, observation: '' },
@@ -173,6 +178,11 @@ const CandidateForm = () => {
               <label className="form-label">LinkedIn</label>
               <input type="text" className="form-control" name="linkedin" value={formData.linkedin} onChange={handleChange} placeholder="https://linkedin.com/in/..." />
             </div>
+
+            <div className="form-group">
+              <label className="form-label">Data de Nascimento</label>
+              <input type="date" className="form-control" name="birthDate" value={formData.birthDate || ''} onChange={handleChange} />
+            </div>
           </div>
         </div>
 
@@ -209,7 +219,42 @@ const CandidateForm = () => {
             </div>
           </div>
 
-          <div className="grid-2">
+          <div className="grid-2" style={{ marginTop: '1rem' }}>
+            <div className="form-group">
+              <label className="form-label">Origem do Candidato</label>
+              <input type="text" className="form-control" name="candidateSource" value={formData.candidateSource || ''} onChange={handleChange} placeholder="Ex: Indicação, parceiro, etc." />
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Base de Trabalho</label>
+              <input type="text" className="form-control" name="workBase" value={formData.workBase || ''} onChange={handleChange} placeholder="Ex: São Paulo, Barueri, etc." />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Idioma 1</label>
+              <select className="form-control" name="language" value={formData.language || ''} onChange={handleChange}>
+                <option value="">Selecione...</option>
+                <option value="Alemão">Alemão</option>
+                <option value="Espanhol">Espanhol</option>
+                <option value="Inglês">Inglês</option>
+                <option value="Português">Português</option>
+              </select>
+            </div>
+            
+            <div className="form-group">
+              <label className="form-label">Nível de Proficiência</label>
+              <select className="form-control" name="languageProficiency" value={formData.languageProficiency || ''} onChange={handleChange}>
+                <option value="">Selecione...</option>
+                <option value="Básico">Básico</option>
+                <option value="Intermediário">Intermediário</option>
+                <option value="Avançado">Avançado</option>
+                <option value="Fluente">Fluente</option>
+                <option value="Nativo">Nativo</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid-2" style={{ marginTop: '1rem' }}>
             <div className="form-group">
               <label className="form-label">Anos de Experiência em TI</label>
               <input type="number" className="form-control" name="experienceIT" value={formData.experienceIT || ''} onChange={handleChange} min="0" step="0.5" placeholder="Ex: 5" />

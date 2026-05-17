@@ -37,6 +37,11 @@ export type Candidate = {
   createdAt: string;
 
   // Additional Information
+  candidateSource?: string;
+  workBase?: string;
+  language?: string;
+  languageProficiency?: string;
+  birthDate?: string;
   salaryExpectationPJ?: string;
   salaryExpectationCLT?: string;
   availableFrom?: string;

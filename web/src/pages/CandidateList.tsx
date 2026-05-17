@@ -8,7 +8,6 @@ const CandidateList = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [candidates, setCandidates] = useState<Candidate[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const limit = 50;
@@ -47,7 +46,6 @@ const CandidateList = () => {
         isExConvista: exConvistaFilter === 'sim' ? true : exConvistaFilter === 'nao' ? false : undefined
       });
       setCandidates(res.data);
-      setTotalCount(res.total);
       setTotalPages(res.totalPages);
     } catch (e) {
       console.error(e);

@@ -147,6 +147,10 @@ const CandidateProfile = () => {
 
   const openCV = () => {
     if (candidate?.cvFile) {
+      if (candidate.cvFile.startsWith('http://') || candidate.cvFile.startsWith('https://')) {
+        window.open(candidate.cvFile, '_blank');
+        return;
+      }
       try {
         // Tratar caso o arquivo seja base64 com prefixo
         const base64Data = candidate.cvFile.includes(',') ? candidate.cvFile.split(',')[1] : candidate.cvFile;

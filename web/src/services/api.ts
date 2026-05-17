@@ -19,7 +19,7 @@ export const api = {
   // Inicialização assíncrona chamada no main.tsx
   syncFromServer: async () => {
     try {
-      const [candidates, techs, criteria, roles, seniorities, statuses, users, logs] = await Promise.all([
+      const [candidates, techs, criteria, roles, seniorities, statuses, languages, users, logs] = await Promise.all([
         fetch(`${API_BASE}/candidates`).then(r => r.json()),
         fetch(`${API_BASE}/settings/technologies`).then(r => r.json()),
         fetch(`${API_BASE}/settings/criteria`).then(r => r.json()),

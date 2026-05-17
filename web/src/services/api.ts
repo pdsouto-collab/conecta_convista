@@ -1,6 +1,6 @@
 import type { Candidate, Technology, LibraryCriteria, RoleOption, Seniority, CandidateStatusOption, User, SystemLog } from '../types';
 
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 // Cache em memória para leitura síncrona
 export const cache = {

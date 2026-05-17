@@ -135,6 +135,46 @@ const CandidateForm = () => {
     }
   };
 
+  const openCV = () => {
+    if (formData.cvFile) {
+      try {
+        const base64Data = formData.cvFile.includes(',') ? formData.cvFile.split(',')[1] : formData.cvFile;
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        
+        const isPdf = formData.cvFileName?.toLowerCase().endsWith('.pdf');
+        const mimeType = isPdf ? 'application/pdf' : 'application/octet-stream';
+        
+        const blob = new Blob([byteArray], { type: mimeType });
+        const blobUrl = URL.createObjectURL(blob);
+        
+        if (isPdf) {
+          window.open(blobUrl, '_blank');
+        } else {
+          const a = document.createElement('a');
+          a.href = blobUrl;
+          a.download = formData.cvFileName || 'curriculo';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
+      } catch (e) {
+        console.error("Erro ao converter arquivo", e);
+        // Fallback
+        if (formData.cvFile.startsWith('data:')) {
+          const w = window.open();
+          if (w) {
+            w.document.write(`<iframe src="${formData.cvFile}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+          }
+        }
+      }
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -478,8 +518,13 @@ const CandidateForm = () => {
             </label>
             
             {fileName && (
-              <div style={{ marginTop: '1rem', padding: '0.5rem', backgroundColor: 'white', borderRadius: '4px', display: 'inline-block' }}>
+              <div style={{ marginTop: '1rem', padding: '0.5rem', backgroundColor: 'white', borderRadius: '4px', display: 'flex', gap: '1rem', alignItems: 'center', justifyContent: 'center' }}>
                 <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>Arquivo selecionado: {fileName}</span>
+                {formData.cvFile && (
+                  <button type="button" className="btn btn-outline" style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }} onClick={openCV}>
+                    Abrir Documento
+                  </button>
+                )}
               </div>
             )}
             

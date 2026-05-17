@@ -72,7 +72,7 @@ export const api = {
       if (userStr) {
         const user = JSON.parse(userStr);
         userId = user.id || 'system';
-        userName = user.name ? `${user.name} ${user.surname || ''}`.trim() : 'Sistema';
+        userName = user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Sistema';
       }
     } catch (e) {}
 

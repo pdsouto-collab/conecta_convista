@@ -32,6 +32,12 @@ const CandidateForm = () => {
     workBase: '',
     language: '',
     languageProficiency: '',
+    language2: '',
+    languageProficiency2: '',
+    language3: '',
+    languageProficiency3: '',
+    language4: '',
+    languageProficiency4: '',
     birthDate: '',
     behavioralEvaluation: [
       { id: uuidv4(), criteria: 'Comunicação', score: 0, observation: '' },
@@ -241,17 +247,96 @@ const CandidateForm = () => {
               </select>
             </div>
             
+            {formData.language && (
+              <div className="form-group">
+                <label className="form-label">Nível de Proficiência (Idioma 1)</label>
+                <select className="form-control" name="languageProficiency" value={formData.languageProficiency || ''} onChange={handleChange}>
+                  <option value="">Selecione...</option>
+                  <option value="Básico">Básico</option>
+                  <option value="Intermediário">Intermediário</option>
+                  <option value="Avançado">Avançado</option>
+                  <option value="Fluente">Fluente</option>
+                  <option value="Nativo">Nativo</option>
+                </select>
+              </div>
+            )}
+          </div>
+
+          <div className="grid-2" style={{ marginTop: '1rem' }}>
             <div className="form-group">
-              <label className="form-label">Nível de Proficiência</label>
-              <select className="form-control" name="languageProficiency" value={formData.languageProficiency || ''} onChange={handleChange}>
+              <label className="form-label">Idioma 2</label>
+              <select className="form-control" name="language2" value={formData.language2 || ''} onChange={handleChange}>
                 <option value="">Selecione...</option>
-                <option value="Básico">Básico</option>
-                <option value="Intermediário">Intermediário</option>
-                <option value="Avançado">Avançado</option>
-                <option value="Fluente">Fluente</option>
-                <option value="Nativo">Nativo</option>
+                <option value="Alemão">Alemão</option>
+                <option value="Espanhol">Espanhol</option>
+                <option value="Inglês">Inglês</option>
+                <option value="Português">Português</option>
               </select>
             </div>
+            
+            {formData.language2 && (
+              <div className="form-group">
+                <label className="form-label">Nível de Proficiência (Idioma 2)</label>
+                <select className="form-control" name="languageProficiency2" value={formData.languageProficiency2 || ''} onChange={handleChange}>
+                  <option value="">Selecione...</option>
+                  <option value="Básico">Básico</option>
+                  <option value="Intermediário">Intermediário</option>
+                  <option value="Avançado">Avançado</option>
+                  <option value="Fluente">Fluente</option>
+                  <option value="Nativo">Nativo</option>
+                </select>
+              </div>
+            )}
+
+            <div className="form-group">
+              <label className="form-label">Idioma 3</label>
+              <select className="form-control" name="language3" value={formData.language3 || ''} onChange={handleChange}>
+                <option value="">Selecione...</option>
+                <option value="Alemão">Alemão</option>
+                <option value="Espanhol">Espanhol</option>
+                <option value="Inglês">Inglês</option>
+                <option value="Português">Português</option>
+              </select>
+            </div>
+            
+            {formData.language3 && (
+              <div className="form-group">
+                <label className="form-label">Nível de Proficiência (Idioma 3)</label>
+                <select className="form-control" name="languageProficiency3" value={formData.languageProficiency3 || ''} onChange={handleChange}>
+                  <option value="">Selecione...</option>
+                  <option value="Básico">Básico</option>
+                  <option value="Intermediário">Intermediário</option>
+                  <option value="Avançado">Avançado</option>
+                  <option value="Fluente">Fluente</option>
+                  <option value="Nativo">Nativo</option>
+                </select>
+              </div>
+            )}
+            
+            <div className="form-group">
+              <label className="form-label">Idioma 4</label>
+              <select className="form-control" name="language4" value={formData.language4 || ''} onChange={handleChange}>
+                <option value="">Selecione...</option>
+                <option value="Alemão">Alemão</option>
+                <option value="Espanhol">Espanhol</option>
+                <option value="Inglês">Inglês</option>
+                <option value="Português">Português</option>
+              </select>
+            </div>
+            
+            {formData.language4 && (
+              <div className="form-group">
+                <label className="form-label">Nível de Proficiência (Idioma 4)</label>
+                <select className="form-control" name="languageProficiency4" value={formData.languageProficiency4 || ''} onChange={handleChange}>
+                  <option value="">Selecione...</option>
+                  <option value="Básico">Básico</option>
+                  <option value="Intermediário">Intermediário</option>
+                  <option value="Avançado">Avançado</option>
+                  <option value="Fluente">Fluente</option>
+                  <option value="Nativo">Nativo</option>
+                </select>
+              </div>
+            )}
           </div>
 
           <div className="grid-2" style={{ marginTop: '1rem' }}>

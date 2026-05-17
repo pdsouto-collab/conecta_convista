@@ -41,6 +41,12 @@ export type Candidate = {
   workBase?: string;
   language?: string;
   languageProficiency?: string;
+  language2?: string;
+  languageProficiency2?: string;
+  language3?: string;
+  languageProficiency3?: string;
+  language4?: string;
+  languageProficiency4?: string;
   birthDate?: string;
   salaryExpectationPJ?: string;
   salaryExpectationCLT?: string;

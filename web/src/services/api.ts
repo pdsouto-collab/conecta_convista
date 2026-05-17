@@ -130,23 +130,22 @@ export const api = {
       api.addLog('CREATE', 'Candidato', `Novo candidato cadastrado: ${candidate.name}`);
     }
     
-    // Fire and forget sync with error alert
-    authFetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(candidate)
-    })
-    .then(async (res) => {
+    try {
+      const res = await authFetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(candidate)
+      });
       if (!res.ok) {
         const err = await res.text();
         console.error("Erro na API:", err);
         if (res.status === 413) { toast.error("O arquivo é grande demais (limite Vercel de 4.5MB)."); }
+        throw new Error("Erro ao salvar candidato");
       }
-    })
-    .catch((e) => {
-      console.error("Falha de rede ao salvar:", e);
-      // toast already shown in authFetch
-    });
+    } catch (e) {
+      console.error("Falha ao salvar no servidor:", e);
+      throw e;
+    }
   },
 
   extractCvText: async (cvFile: string, cvFileName: string): Promise<string> => {

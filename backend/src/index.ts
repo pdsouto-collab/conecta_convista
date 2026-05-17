@@ -1,9 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
+import { put } from '@vercel/blob';
 import dotenv from 'dotenv';
-const pdfParse = require('pdf-parse');
-const mammoth = require('mammoth');
 
 dotenv.config();
 
@@ -145,9 +144,11 @@ app.post('/api/extract-cv', async (req, res) => {
     let extractedText = '';
 
     if (cvFileName.toLowerCase().endsWith('.pdf')) {
+      const pdfParse = require('pdf-parse');
       const pdfData = await pdfParse(buffer);
       extractedText = pdfData.text;
     } else if (cvFileName.toLowerCase().endsWith('.doc') || cvFileName.toLowerCase().endsWith('.docx')) {
+      const mammoth = require('mammoth');
       const result = await mammoth.extractRawText({ buffer });
       extractedText = result.value;
     } else {
@@ -218,7 +219,6 @@ app.post('/api/candidates', async (req, res) => {
         try {
           const match = rest.cvFile.match(/^data:(.+);base64,(.+)$/);
           if (match) {
-            const { put } = require('@vercel/blob');
             const buffer = Buffer.from(match[2], 'base64');
             const blob = await put(`cvs/${Date.now()}_${rest.cvFileName || 'document'}`, buffer, {
               access: 'public',
@@ -262,7 +262,6 @@ app.put('/api/candidates/:id', async (req, res) => {
         try {
           const match = rest.cvFile.match(/^data:(.+);base64,(.+)$/);
           if (match) {
-            const { put } = require('@vercel/blob');
             const buffer = Buffer.from(match[2], 'base64');
             const blob = await put(`cvs/${Date.now()}_${rest.cvFileName || 'document'}`, buffer, {
               access: 'public',

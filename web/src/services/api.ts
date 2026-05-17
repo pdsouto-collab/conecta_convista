@@ -90,12 +90,23 @@ export const api = {
       api.addLog('CREATE', 'Candidato', `Novo candidato cadastrado: ${candidate.name}`);
     }
     
-    // Fire and forget sync
+    // Fire and forget sync with error alert
     fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(candidate)
-    }).catch(() => {});
+    })
+    .then(async (res) => {
+      if (!res.ok) {
+        const err = await res.text();
+        console.error("Erro na API:", err);
+        alert("Ocorreu um erro ao salvar no servidor. Possivelmente o arquivo é grande demais (limite Vercel de 4.5MB). Detalhes: " + res.status);
+      }
+    })
+    .catch((e) => {
+      console.error("Falha de rede ao salvar:", e);
+      alert("Falha de rede ao salvar o candidato no servidor.");
+    });
   },
 
   deleteCandidate: (id: string): void => {

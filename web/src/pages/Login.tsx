@@ -47,9 +47,13 @@ const Login = () => {
       alignItems: 'center',
       justifyContent: 'center',
       minHeight: '100vh',
+      width: '100%',
+      backgroundImage: "url('/bg-login.png')",
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
       backgroundColor: 'var(--bg-main)'
     }}>
-      <div className="card" style={{ width: '100%', maxWidth: '400px', padding: '2.5rem' }}>
+      <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '400px', padding: '2.5rem', backgroundColor: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(10px)', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
             <div style={{ background: 'var(--primary)', color: 'white', padding: '0.5rem 1rem', borderRadius: '4px', fontWeight: 800, letterSpacing: '-0.5px', fontSize: '1.5rem', display: 'flex', gap: '0.2rem' }}>

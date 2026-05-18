@@ -343,7 +343,7 @@ export const api = {
     }
 
     authFetch(`${API_BASE}/settings/users`, {
-      method: 'POST',
+      method: existingIndex >= 0 ? 'PUT' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(user)
     }).catch(() => {});
